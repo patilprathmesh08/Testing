@@ -3,13 +3,13 @@ name: STM32 CMake Build
 on:
   push:
     branches:
-      - main          ← change from master
-      - MotorCode     ← change from poc
+      - main         
+      - MotorCode     
 
   pull_request:
     branches:
-      - main          ← change from master
-      - MotorCode     ← change from poc
+      - main         
+      - MotorCode     
 
 jobs:
   build:
