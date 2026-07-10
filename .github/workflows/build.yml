@@ -1,19 +1,15 @@
 name: STM32 CMake Build
 
 on:
-  # Trigger on push to main branches
   push:
     branches:
-      - master
-      - develop
-      - poc
+      - main          ← change from master
+      - MotorCode     ← change from poc
 
-  # Trigger on pull request to main branches
   pull_request:
     branches:
-      - master
-      - develop
-      - poc
+      - main          ← change from master
+      - MotorCode     ← change from poc
 
 jobs:
   build:
