@@ -1,0 +1,92 @@
+name: STM32 CMake Build
+
+on:
+  # Trigger on push to main branches
+  push:
+    branches:
+      - main
+      - MotorCode
+
+  # Trigger on pull request to main branches
+  pull_request:
+    branches:
+      - main
+      - MotorCode
+
+jobs:
+  build:
+    name: Build STM32G431 Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 - Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2 - Install ARM GCC Toolchain
+      - name: Install ARM GCC Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+
+      # Step 3 - Verify ARM GCC installation
+      - name: Verify ARM GCC Version
+        run: arm-none-eabi-gcc --version
+
+      # Step 4 - Install Ninja build system
+      - name: Install Ninja
+        run: sudo apt-get install -y ninja-build
+
+      # Step 5 - Verify Ninja installation
+      - name: Verify Ninja Version
+        run: ninja --version
+
+      # Step 6 - Install CMake
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.27'
+
+      # Step 7 - Verify CMake installation
+      - name: Verify CMake Version
+        run: cmake --version
+
+      # Step 8 - List repo structure to verify folder names
+      - name: List Repo Structure
+        run: ls -la
+
+      # Step 9 - Configure CMake Debug preset
+      - name: Configure CMake (Debug)
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --preset Debug
+
+      # Step 10 - Build Debug firmware
+      - name: Build Debug Firmware
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --build --preset Debug
+
+      # Step 11 - Configure CMake Release preset
+      - name: Configure CMake (Release)
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --preset Release
+
+      # Step 12 - Build Release firmware
+      - name: Build Release Firmware
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --build --preset Release
+
+      # Step 13 - Upload Debug ELF artifact
+      - name: Upload Debug ELF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-debug
+          path: CNR-Motor-Driver-1.0/build/Debug/**/*.elf
+          retention-days: 7
+
+      # Step 14 - Upload Release ELF artifact
+      - name: Upload Release ELF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-release
+          path: CNR-Motor-Driver-1.0/build/Release/**/*.elf
+          retention-days: 7
