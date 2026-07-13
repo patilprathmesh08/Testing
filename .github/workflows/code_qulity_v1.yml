@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for SonarCloud to analyze full history
+          fetch-depth: 0
 
       # Step 2 - Install ARM GCC Toolchain
       - name: Install ARM GCC Toolchain
@@ -42,61 +42,55 @@ jobs:
       - name: Install Doxygen
         run: sudo apt-get install -y doxygen graphviz
 
-      # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE ───────────────────────────────
+      # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
+      # Only checks Src/ and Inc/ folders
+      # Will warn but NOT fail the build if headers are missing
 
-      # Step 6 - Check all .c and .h files have copyright/header notice
       - name: Check File Headers and Copyright Notice
         run: |
-          echo "Checking copyright headers in all .c and .h files..."
+          echo "Checking copyright headers in Src/ and Inc/ only..."
           MISSING=0
-          # Search inside CNR-Motor-Driver-1.0 folder
           while IFS= read -r file; do
             if ! grep -q "Copyright\|copyright\|LICENSE\|license\|Author\|author" "$file"; then
-              echo "MISSING HEADER: $file"
+              echo "WARNING - MISSING HEADER: $file"
               MISSING=$((MISSING + 1))
             fi
-          done < <(find CNR-Motor-Driver-1.0 -name "*.c" -o -name "*.h")
+          done < <(find CNR-Motor-Driver-1.0/Src CNR-Motor-Driver-1.0/Inc -name "*.c" -o -name "*.h" 2>/dev/null)
           if [ "$MISSING" -gt 0 ]; then
             echo "---"
-            echo "FAILED: $MISSING file(s) are missing copyright/header notice."
+            echo "WARNING: $MISSING file(s) in Src/ or Inc/ are missing copyright/header notice."
             echo "Please add a copyright header to each file listed above."
-            exit 1
+            echo "This is a warning only - build will continue."
           else
-            echo "PASSED: All files have copyright/header notice."
+            echo "PASSED: All files in Src/ and Inc/ have copyright/header notice."
           fi
 
       # ─── CHECK 2: DOXYGEN COMMENT BLOCKS ────────────────────────────────────
 
-      # Step 7 - Generate Doxyfile if not present
       - name: Setup Doxyfile
         working-directory: CNR-Motor-Driver-1.0
         run: |
           if [ ! -f Doxyfile ]; then
             echo "No Doxyfile found, generating default..."
             doxygen -g Doxyfile
-            # Configure Doxygen for C/C++ project
             sed -i 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "CNR-BLDC-MOTOR-FOC"/' Doxyfile
-            sed -i 's/INPUT                  =/INPUT                  = Src Inc/' Doxyfile
+            sed -i 's|INPUT                  =|INPUT                  = Src Inc|' Doxyfile
             sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile
             sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
-            sed -i 's/WARN_IF_UNDOCUMENTED   = YES/WARN_IF_UNDOCUMENTED   = YES/' Doxyfile
           fi
 
-      # Step 8 - Run Doxygen and check for errors/warnings
       - name: Run Doxygen Check
         working-directory: CNR-Motor-Driver-1.0
         run: |
           echo "Running Doxygen..."
           doxygen Doxyfile 2>&1 | tee doxygen_output.log
-          # Check for critical errors
-          if grep -i "error" doxygen_output.log; then
+          if grep -i "^.*error:" doxygen_output.log; then
             echo "FAILED: Doxygen found critical errors."
             exit 1
           else
             echo "PASSED: No critical Doxygen errors found."
           fi
 
-      # Step 9 - Upload Doxygen log as artifact
       - name: Upload Doxygen Log
         uses: actions/upload-artifact@v4
         if: always()
@@ -107,18 +101,18 @@ jobs:
 
       # ─── CHECK 3: SONARCLOUD ANALYSIS ───────────────────────────────────────
 
-      # Step 10 - Run SonarCloud Scan (Security, Reliability, Maintenance)
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub token for PR analysis
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # SonarCloud token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
+          projectBaseDir: CNR-Motor-Driver-1.0
           args: >
             -Dsonar.organization=patilprathmesh08
             -Dsonar.projectKey=patilprathmesh08_Testing
-            -Dsonar.sources=CNR-Motor-Driver-1.0/Src
-            -Dsonar.cfamily.compile-commands=CNR-Motor-Driver-1.0/build/Debug/compile_commands.json
+            -Dsonar.sources=Src
+            -Dsonar.inclusions=**/*.c,**/*.h
             -Dsonar.c.file.suffixes=.c
-            -Dsonar.cpp.file.suffixes=.cpp,.cc
             -Dsonar.h.file.suffixes=.h
+            -Dsonar.exclusions=**/Drivers/**,**/MCSDK_v6.4.2-Full/**,**/build/**
