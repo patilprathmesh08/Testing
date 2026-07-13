@@ -96,14 +96,13 @@ jobs:
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # sonar.qualitygate.wait=false means workflow will NOT fail
-      # even if Quality Gate fails - results are still posted on SonarCloud
-
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5
+      # Using sonarcloud-github-action with qualitygate.wait=false
+      # This prevents workflow failure even if Quality Gate fails
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
         with:
           projectBaseDir: CNR-Motor-Driver-1.0
           args: >
