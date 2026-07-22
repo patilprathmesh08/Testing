@@ -17,14 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1 - Checkout repository code
+      # Step 1 - Checkout the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          path: stm32-testing
 
-      # Step 2 - Install system dependencies
-      - name: Install System Dependencies
+      # Step 2 - Install ARM GCC Toolchain
+      - name: Install ARM GCC Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
@@ -53,50 +51,42 @@ jobs:
 
       # Step 8 - List repo structure to verify folder names
       - name: List Repo Structure
-        run: ls -la stm32-testing/
+        run: ls -la
 
       # Step 9 - Configure CMake Debug preset
       - name: Configure CMake (Debug)
-        working-directory: stm32-testing/CNR-Motor-Driver-1.0
+        working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Debug
 
       # Step 10 - Build Debug firmware
       - name: Build Debug Firmware
-        working-directory: stm32-testing/CNR-Motor-Driver-1.0
+        working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Debug
 
       # Step 11 - Configure CMake Release preset
       - name: Configure CMake (Release)
-        working-directory: stm32-testing/CNR-Motor-Driver-1.0
+        working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Release
 
       # Step 12 - Build Release firmware
       - name: Build Release Firmware
-        working-directory: stm32-testing/CNR-Motor-Driver-1.0
+        working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
 
-      # Step 13 - Show memory usage
-      - name: Show Memory Usage
-        run: |
-          echo "=== Debug Build Memory Usage ==="
-          size stm32-testing/CNR-Motor-Driver-1.0/build/Debug/*.elf || true
-          echo "=== Release Build Memory Usage ==="
-          size stm32-testing/CNR-Motor-Driver-1.0/build/Release/*.elf || true
-
-      # Step 14 - Upload Debug ELF artifact
+      # Step 13 - Upload Debug ELF artifact
       - name: Upload Debug ELF Artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware-debug
-          path: stm32-testing/CNR-Motor-Driver-1.0/build/Debug/**/*.elf
+          path: CNR-Motor-Driver-1.0/build/Debug/**/*.elf
           retention-days: 7
 
-      # Step 15 - Upload Release ELF artifact
+      # Step 14 - Upload Release ELF artifact
       - name: Upload Release ELF Artifact
         uses: actions/upload-artifact@v4
         with:
           name: firmware-release
-          path: stm32-testing/CNR-Motor-Driver-1.0/build/Release/**/*.elf
+          path: CNR-Motor-Driver-1.0/build/Release/**/*.elf
           retention-days: 7
 
   # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
