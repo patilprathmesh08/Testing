@@ -72,43 +72,54 @@ jobs:
       - name: Build Release Firmware
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
-      # Step 13 - Generate HEX and BIN files
-      - name: Generate HEX and BIN files
+
+      # Step 13 - Generate HEX and BIN files from ELF
+      - name: Generate HEX and BIN Files
         working-directory: CNR-Motor-Driver-1.0
         run: |
           # Debug hex and bin
-          arm-none-eabi-objcopy -O ihex build/Debug/*.elf build/Debug/firmware_debug.hex
-          arm-none-eabi-objcopy -O binary build/Debug/*.elf build/Debug/firmware_debug.bin
-      
-          # Release hex and bin
-          arm-none-eabi-objcopy -O ihex build/Release/*.elf build/Release/firmware_release.hex
-          arm-none-eabi-objcopy -O binary build/Release/*.elf build/Release/firmware_release.bin
-        
+          arm-none-eabi-objcopy -O ihex \
+            $(find build/Debug -name "*.elf" | head -1) \
+            build/Debug/firmware_debug.hex
+          arm-none-eabi-objcopy -O binary \
+            $(find build/Debug -name "*.elf" | head -1) \
+            build/Debug/firmware_debug.bin
 
-      # Upload Debug artifacts
+          # Release hex and bin
+          arm-none-eabi-objcopy -O ihex \
+            $(find build/Release -name "*.elf" | head -1) \
+            build/Release/firmware_release.hex
+          arm-none-eabi-objcopy -O binary \
+            $(find build/Release -name "*.elf" | head -1) \
+            build/Release/firmware_release.bin
+
+          echo "=== Generated Files ==="
+          ls -la build/Debug/*.hex build/Debug/*.bin
+          ls -la build/Release/*.hex build/Release/*.bin
+
+      # Step 14 - Upload Debug artifacts (elf, hex, bin)
       - name: Upload Debug Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-debug
           path: |
             CNR-Motor-Driver-1.0/build/Debug/**/*.elf
-            CNR-Motor-Driver-1.0/build/Debug/**/*.hex
-            CNR-Motor-Driver-1.0/build/Debug/**/*.bin
+            CNR-Motor-Driver-1.0/build/Debug/*.hex
+            CNR-Motor-Driver-1.0/build/Debug/*.bin
           retention-days: 7
-      
-      # Upload Release artifacts
+
+      # Step 15 - Upload Release artifacts (elf, hex, bin)
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-release
           path: |
             CNR-Motor-Driver-1.0/build/Release/**/*.elf
-            CNR-Motor-Driver-1.0/build/Release/**/*.hex
-            CNR-Motor-Driver-1.0/build/Release/**/*.bin
+            CNR-Motor-Driver-1.0/build/Release/*.hex
+            CNR-Motor-Driver-1.0/build/Release/*.bin
           retention-days: 7
 
   # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
-  # Runs in parallel with build job
   code-quality:
     name: Code Quality Checks
     runs-on: ubuntu-latest
@@ -120,7 +131,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2 - Install Doxygen
+      # Step 2 - Install Doxygen and Graphviz
       - name: Install Doxygen
         run: |
           sudo apt-get update
@@ -146,20 +157,10 @@ jobs:
             echo "PASSED: All files in Src/ and Inc/ have copyright/header notice."
           fi
 
-      # ─── CHECK 2: DOXYGEN DOCUMENTATION CHECK (WARNING ONLY) ────────────────
-      - name: Setup Doxyfile
-        working-directory: CNR-Motor-Driver-1.0
-        run: |
-          if [ ! -f Doxyfile ]; then
-            echo "No Doxyfile found, generating default..."
-            doxygen -g Doxyfile
-           sed -i 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "StmTesting"/' Doxyfile
-            sed -i 's|INPUT                  =|INPUT                  = Src Inc|' Doxyfile
-            sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile
-            sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
-          fi
-
-      - name: Run Doxygen Check
+      # ─── CHECK 2: DOXYGEN DOCUMENTATION (HTML OUTPUT) ───────────────────────
+      # Uses Doxyfile committed in repo
+      # Generates full HTML documentation
+      - name: Run Doxygen
         working-directory: CNR-Motor-Driver-1.0
         run: |
           echo "Running Doxygen..."
@@ -173,16 +174,22 @@ jobs:
           else
             echo "PASSED: No Doxygen warnings found."
           fi
+          echo "=== HTML Documentation Generated ==="
+          ls -la docs/html/ | head -20
 
-      - name: Upload Doxygen Log
+      # Step - Upload Doxygen HTML documentation and log
+      - name: Upload Doxygen Documentation
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: stm32-doxygen-log
-          path: CNR-Motor-Driver-1.0/doxygen_output.log
+          name: stm32-doxygen-docs
+          path: |
+            CNR-Motor-Driver-1.0/doxygen_output.log
+            CNR-Motor-Driver-1.0/docs/html/
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
+      # All SonarCloud config moved to sonar-project.properties
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
@@ -190,13 +197,3 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           projectBaseDir: CNR-Motor-Driver-1.0
-          args: >
-            -Dsonar.organization=patilprathmesh08
-            -Dsonar.projectKey=patilprathmesh08_Testing
-            -Dsonar.projectName=Testing
-            -Dsonar.sources=Src
-            -Dsonar.inclusions=**/*.c,**/*.h
-            -Dsonar.c.file.suffixes=.c
-            -Dsonar.h.file.suffixes=.h
-            -Dsonar.exclusions=**/build/**,**/Drivers/**,**/MCSDK_v6.4.2-Full/**
-            -Dsonar.qualitygate.wait=false
