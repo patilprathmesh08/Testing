@@ -72,21 +72,39 @@ jobs:
       - name: Build Release Firmware
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
+      # Step 13 - Generate HEX and BIN files
+      - name: Generate HEX and BIN files
+        working-directory: CNR-Motor-Driver-1.0
+        run: |
+          # Debug hex and bin
+          arm-none-eabi-objcopy -O ihex build/Debug/*.elf build/Debug/firmware_debug.hex
+          arm-none-eabi-objcopy -O binary build/Debug/*.elf build/Debug/firmware_debug.bin
+      
+          # Release hex and bin
+          arm-none-eabi-objcopy -O ihex build/Release/*.elf build/Release/firmware_release.hex
+          arm-none-eabi-objcopy -O binary build/Release/*.elf build/Release/firmware_release.bin
+        
 
-      # Step 13 - Upload Debug ELF artifact
-      - name: Upload Debug ELF Artifact
+      # Upload Debug artifacts
+      - name: Upload Debug Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-debug
-          path: CNR-Motor-Driver-1.0/build/Debug/**/*.elf
+          path: |
+            CNR-Motor-Driver-1.0/build/Debug/**/*.elf
+            CNR-Motor-Driver-1.0/build/Debug/**/*.hex
+            CNR-Motor-Driver-1.0/build/Debug/**/*.bin
           retention-days: 7
-
-      # Step 14 - Upload Release ELF artifact
-      - name: Upload Release ELF Artifact
+      
+      # Upload Release artifacts
+      - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: firmware-release
-          path: CNR-Motor-Driver-1.0/build/Release/**/*.elf
+          path: |
+            CNR-Motor-Driver-1.0/build/Release/**/*.elf
+            CNR-Motor-Driver-1.0/build/Release/**/*.hex
+            CNR-Motor-Driver-1.0/build/Release/**/*.bin
           retention-days: 7
 
   # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
