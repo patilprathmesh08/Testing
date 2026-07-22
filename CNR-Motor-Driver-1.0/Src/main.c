@@ -279,7 +279,7 @@ int main(void)
 
   printf("[INIT] Ready. Motor starts in %d ms\r\n\r\n", MOTOR_START_DELAY_MS);
 
-  printf("Motor is running \n");
+  // printf("Motor is running \n");
 
   /* USER CODE END 2 */
 

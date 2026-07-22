@@ -1,0 +1,90 @@
+# Doxyfile for CNR-BLDC-MOTOR-FOC STM32G431 Project
+# Version: v1
+# Date: 22-07-2026
+
+#---------------------------------------------------------------------------
+# Project Information
+#---------------------------------------------------------------------------
+PROJECT_NAME           = "Testing"
+PROJECT_NUMBER         = "v1.0"
+PROJECT_BRIEF          = "CNR BLDC Motor FOC - STM32G431 Firmware"
+OUTPUT_DIRECTORY       = docs
+
+#---------------------------------------------------------------------------
+# Input Configuration
+#---------------------------------------------------------------------------
+INPUT                  = Src Inc
+RECURSIVE              = YES
+FILE_PATTERNS          = *.c *.h
+EXCLUDE_PATTERNS       = */build/* */Drivers/* */MCSDK_v6.4.2-Full/*
+
+#---------------------------------------------------------------------------
+# Output Configuration
+#---------------------------------------------------------------------------
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_FILE_EXTENSION    = .html
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+
+#---------------------------------------------------------------------------
+# Extraction Configuration
+#---------------------------------------------------------------------------
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_METHODS  = YES
+
+#---------------------------------------------------------------------------
+# Documentation Configuration
+#---------------------------------------------------------------------------
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+MULTILINE_CPP_IS_BRIEF = YES
+INHERIT_DOCS           = YES
+SEPARATE_MEMBER_PAGES  = NO
+
+#---------------------------------------------------------------------------
+# Warning Configuration
+#---------------------------------------------------------------------------
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_FORMAT            = "$file:$line: $text"
+WARN_LOGFILE           = doxygen_output.log
+
+#---------------------------------------------------------------------------
+# Source Code Display
+#---------------------------------------------------------------------------
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+#---------------------------------------------------------------------------
+# Diagram Configuration (requires graphviz)
+#---------------------------------------------------------------------------
+HAVE_DOT               = YES
+DOT_NUM_THREADS        = 0
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+
+#---------------------------------------------------------------------------
+# HTML Theme Configuration
+#---------------------------------------------------------------------------
+HTML_COLORSTYLE        = AUTO_LIGHT
+HTML_DYNAMIC_SECTIONS  = YES
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
+TREEVIEW_WIDTH         = 250
+
+#---------------------------------------------------------------------------
+# Encoding
+#---------------------------------------------------------------------------
+DOXYFILE_ENCODING      = UTF-8
+INPUT_ENCODING         = UTF-8
+OUTPUT_LANGUAGE        = English
