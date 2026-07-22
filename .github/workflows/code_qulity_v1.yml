@@ -1,4 +1,4 @@
-name: Code Quality Checks
+name: STM32 Motor Controller CI Pipeline
 
 on:
   push:
@@ -11,6 +11,86 @@ on:
       - MotorCode
 
 jobs:
+  # ─── JOB 1: BUILD FIRMWARE ──────────────────────────────────────────────────
+  build:
+    name: Build STM32G431 Firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 - Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2 - Install ARM GCC Toolchain
+      - name: Install ARM GCC Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+
+      # Step 3 - Verify ARM GCC installation
+      - name: Verify ARM GCC Version
+        run: arm-none-eabi-gcc --version
+
+      # Step 4 - Install Ninja build system
+      - name: Install Ninja
+        run: sudo apt-get install -y ninja-build
+
+      # Step 5 - Verify Ninja installation
+      - name: Verify Ninja Version
+        run: ninja --version
+
+      # Step 6 - Install CMake
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.27'
+
+      # Step 7 - Verify CMake installation
+      - name: Verify CMake Version
+        run: cmake --version
+
+      # Step 8 - List repo structure to verify folder names
+      - name: List Repo Structure
+        run: ls -la
+
+      # Step 9 - Configure CMake Debug preset
+      - name: Configure CMake (Debug)
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --preset Debug
+
+      # Step 10 - Build Debug firmware
+      - name: Build Debug Firmware
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --build --preset Debug
+
+      # Step 11 - Configure CMake Release preset
+      - name: Configure CMake (Release)
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --preset Release
+
+      # Step 12 - Build Release firmware
+      - name: Build Release Firmware
+        working-directory: CNR-Motor-Driver-1.0
+        run: cmake --build --preset Release
+
+      # Step 13 - Upload Debug ELF artifact
+      - name: Upload Debug ELF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-debug
+          path: CNR-Motor-Driver-1.0/build/Debug/**/*.elf
+          retention-days: 7
+
+      # Step 14 - Upload Release ELF artifact
+      - name: Upload Release ELF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-release
+          path: CNR-Motor-Driver-1.0/build/Release/**/*.elf
+          retention-days: 7
+
+  # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
+  # Runs in parallel with build job
   code-quality:
     name: Code Quality Checks
     runs-on: ubuntu-latest
@@ -22,43 +102,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2 - Install ARM GCC Toolchain
-      - name: Install ARM GCC Toolchain
+      # Step 2 - Install Doxygen
+      - name: Install Doxygen
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
-
-      # Step 3 - Install Ninja
-      - name: Install Ninja
-        run: sudo apt-get install -y ninja-build
-
-      # Step 4 - Install CMake
-      - name: Install CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.27'
-
-      # Step 5 - Install Doxygen
-      - name: Install Doxygen
-        run: sudo apt-get install -y doxygen graphviz
+          sudo apt-get install -y doxygen graphviz
 
       # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
+      # Only checks Src/ and Inc/ folders - skips Drivers/ and MCSDK/
       - name: Check File Headers and Copyright Notice
         run: |
           echo "Checking copyright headers in Src/ and Inc/ only..."
           MISSING=0
           while IFS= read -r file; do
-            if ! grep -q "Copyright\|copyright\|LICENSE\|license\|Author\|author" "$file"; then
+            if ! grep -q "Copyright\|copyright\|LICENSE\|license\|Author\|author\|SPDX" "$file"; then
               echo "WARNING - MISSING HEADER: $file"
               MISSING=$((MISSING + 1))
             fi
           done < <(find CNR-Motor-Driver-1.0/Src CNR-Motor-Driver-1.0/Inc -name "*.c" -o -name "*.h" 2>/dev/null)
           if [ "$MISSING" -gt 0 ]; then
             echo "---"
-            echo "WARNING: $MISSING file(s) missing copyright/header notice."
+            echo "WARNING: $MISSING file(s) in Src/ or Inc/ are missing copyright/header notice."
             echo "This is a warning only - build will continue."
           else
-            echo "PASSED: All files have copyright/header notice."
+            echo "PASSED: All files in Src/ and Inc/ have copyright/header notice."
           fi
 
       # ─── CHECK 2: DOXYGEN DOCUMENTATION CHECK (WARNING ONLY) ────────────────
@@ -66,6 +133,7 @@ jobs:
         working-directory: CNR-Motor-Driver-1.0
         run: |
           if [ ! -f Doxyfile ]; then
+            echo "No Doxyfile found, generating default..."
             doxygen -g Doxyfile
             sed -i 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "CNR-BLDC-MOTOR-FOC"/' Doxyfile
             sed -i 's|INPUT                  =|INPUT                  = Src Inc|' Doxyfile
@@ -79,9 +147,10 @@ jobs:
           echo "Running Doxygen..."
           doxygen Doxyfile 2>&1 | tee doxygen_output.log
           WARNINGS=$(grep -c "warning:" doxygen_output.log || true)
+          echo "---"
           echo "Doxygen Warnings: $WARNINGS"
           if [ "$WARNINGS" -gt 0 ]; then
-            echo "WARNING: $WARNINGS Doxygen warning(s) found."
+            echo "WARNING: $WARNINGS Doxygen warning(s) found - please review doxygen_output.log"
             echo "This is a warning only - build will continue."
           else
             echo "PASSED: No Doxygen warnings found."
@@ -91,13 +160,11 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: doxygen-log
+          name: stm32-doxygen-log
           path: CNR-Motor-Driver-1.0/doxygen_output.log
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # Using sonarcloud-github-action with qualitygate.wait=false
-      # This prevents workflow failure even if Quality Gate fails
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
@@ -112,5 +179,5 @@ jobs:
             -Dsonar.inclusions=**/*.c,**/*.h
             -Dsonar.c.file.suffixes=.c
             -Dsonar.h.file.suffixes=.h
-            -Dsonar.exclusions=**/Drivers/**,**/MCSDK_v6.4.2-Full/**,**/build/**
+            -Dsonar.exclusions=**/build/**,**/Drivers/**,**/MCSDK_v6.4.2-Full/**
             -Dsonar.qualitygate.wait=false
