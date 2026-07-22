@@ -1,5 +1,5 @@
 # Doxyfile for CNR-BLDC-MOTOR-FOC STM32G431 Project
-# Version: v1
+# Version: v2
 # Date: 22-07-2026
 
 #---------------------------------------------------------------------------
@@ -19,13 +19,28 @@ FILE_PATTERNS          = *.c *.h
 EXCLUDE_PATTERNS       = */build/* */Drivers/* */MCSDK_v6.4.2-Full/*
 
 #---------------------------------------------------------------------------
-# Output Configuration
+# Output Configuration - HTML only
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
 GENERATE_LATEX         = NO
 GENERATE_XML           = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+GENERATE_DOCBOOK       = NO
+
+#---------------------------------------------------------------------------
+# Disable extra files
+#---------------------------------------------------------------------------
+HTML_DYNAMIC_MENUS     = NO
+SEARCHENGINE           = NO
+SERVER_BASED_SEARCH    = NO
+GENERATE_TREEVIEW      = NO
+DISABLE_INDEX          = NO
+HTML_DYNAMIC_SECTIONS  = NO
+GENERATE_LEGEND        = NO
+DOT_CLEANUP            = YES
 
 #---------------------------------------------------------------------------
 # Extraction Configuration
@@ -39,10 +54,7 @@ EXTRACT_LOCAL_METHODS  = YES
 # Documentation Configuration
 #---------------------------------------------------------------------------
 JAVADOC_AUTOBRIEF      = YES
-QT_AUTOBRIEF           = YES
-MULTILINE_CPP_IS_BRIEF = YES
 INHERIT_DOCS           = YES
-SEPARATE_MEMBER_PAGES  = NO
 
 #---------------------------------------------------------------------------
 # Warning Configuration
@@ -58,29 +70,14 @@ WARN_LOGFILE           = doxygen_output.log
 # Source Code Display
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
-INLINE_SOURCES         = NO
-STRIP_CODE_COMMENTS    = NO
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
 
 #---------------------------------------------------------------------------
-# Diagram Configuration (requires graphviz)
+# Diagram Configuration - disabled to avoid extra files
 #---------------------------------------------------------------------------
-HAVE_DOT               = YES
-DOT_NUM_THREADS        = 0
-CALL_GRAPH             = YES
-CALLER_GRAPH           = YES
-GRAPHICAL_HIERARCHY    = YES
-DIRECTORY_GRAPH        = YES
-
-#---------------------------------------------------------------------------
-# HTML Theme Configuration
-#---------------------------------------------------------------------------
-HTML_COLORSTYLE        = AUTO_LIGHT
-HTML_DYNAMIC_SECTIONS  = YES
-GENERATE_TREEVIEW      = YES
-FULL_SIDEBAR           = NO
-TREEVIEW_WIDTH         = 250
+HAVE_DOT               = NO
+CLASS_DIAGRAMS         = NO
 
 #---------------------------------------------------------------------------
 # Encoding
