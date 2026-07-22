@@ -135,7 +135,7 @@ jobs:
           if [ ! -f Doxyfile ]; then
             echo "No Doxyfile found, generating default..."
             doxygen -g Doxyfile
-            sed -i 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "CNR-BLDC-MOTOR-FOC"/' Doxyfile
+           sed -i 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "StmTesting"/' Doxyfile
             sed -i 's|INPUT                  =|INPUT                  = Src Inc|' Doxyfile
             sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile
             sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
@@ -175,6 +175,7 @@ jobs:
           args: >
             -Dsonar.organization=patilprathmesh08
             -Dsonar.projectKey=patilprathmesh08_Testing
+            -Dsonar.projectName=Testing
             -Dsonar.sources=Src
             -Dsonar.inclusions=**/*.c,**/*.h
             -Dsonar.c.file.suffixes=.c
