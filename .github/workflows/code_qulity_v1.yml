@@ -62,11 +62,18 @@ jobs:
           echo "$PWD/build-wrapper-linux-x86" >> $GITHUB_PATH
           rm build-wrapper-linux-x86.zip
           echo "Build Wrapper installed successfully"
-
-      # Step 8 - Configure CMake Debug preset
-      - name: Configure CMake (Debug)
+  
+      - name: List Build Wrapper Output
         working-directory: CNR-Motor-Driver-1.0
-        run: cmake --preset Debug
+        run: |
+          echo "=== Build wrapper output files ==="
+          ls -la build-wrapper-output/
+          echo "=== compile_commands.json first 5 lines ==="
+          head -5 build-wrapper-output/compile_commands.json || echo "NOT FOUND"
+            # Step 8 - Configure CMake Debug preset
+            - name: Configure CMake (Debug)
+              working-directory: CNR-Motor-Driver-1.0
+              run: cmake --preset Debug
 
       # Step 9 - Build Debug firmware with Sonar Build Wrapper
       # Same job = same machine = same absolute paths
