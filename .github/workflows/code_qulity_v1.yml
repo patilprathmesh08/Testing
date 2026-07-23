@@ -100,18 +100,7 @@ jobs:
           ls -la build/Debug/*.hex build/Debug/*.bin
           ls -la build/Release/*.hex build/Release/*.bin
 
-      # Step 14 - Upload Debug artifacts (elf, hex, bin)
-      - name: Upload Debug Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware-debug
-          path: |
-            CNR-Motor-Driver-1.0/build/Debug/**/*.elf
-            CNR-Motor-Driver-1.0/build/Debug/*.hex
-            CNR-Motor-Driver-1.0/build/Debug/*.bin
-          retention-days: 7
-
-      # Step 15 - Upload Release artifacts (elf, hex, bin)
+      # Step 14 - Upload Release artifacts (elf, hex, bin)
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
