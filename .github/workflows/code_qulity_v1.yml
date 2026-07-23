@@ -133,13 +133,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-wrapper-output
-          path: build-wrapper-output/    ← at root level not inside CNR-Motor-Driver-1.0
+          path: build-wrapper-output/   
 
       - name: Check Build Wrapper Output
         run: |
           echo "=== Build Wrapper Output Contents ==="
-          ls -la CNR-Motor-Driver-1.0/build-wrapper-output/
-          cat CNR-Motor-Driver-1.0/build-wrapper-output/build-wrapper-dump.json | head -20
+          ls -la build-wrapper-output/
+          cat build-wrapper-output/build-wrapper-dump.json | head -20
 
       # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
       - name: Check File Headers and Copyright Notice
