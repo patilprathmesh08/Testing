@@ -52,32 +52,33 @@ jobs:
           unzip -q build-wrapper-linux-x86.zip
           echo "$PWD/build-wrapper-linux-x86" >> $GITHUB_PATH
           rm build-wrapper-linux-x86.zip
+          echo "Build Wrapper installed successfully"
 
-      # Step 8 - Configure CMake Debug preset
+      # Step 7 - Configure CMake Debug preset
       - name: Configure CMake (Debug)
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Debug
 
-      # Step 9 - Build Debug firmware with Sonar Build Wrapper
-      # Build Wrapper wraps the build to capture compiler calls
+      # Step 8 - Build Debug firmware with Sonar Build Wrapper
+      # Output saved at repo root level: /github/workspace/build-wrapper-output/
       - name: Build Debug Firmware with Build Wrapper
-        working-directory: CNR-Motor-Driver-1.0
         run: |
           build-wrapper-linux-x86-64 \
             --out-dir build-wrapper-output \
-            cmake --build --preset Debug
+            cmake --build --preset Debug \
+            --build-directory CNR-Motor-Driver-1.0/build/Debug
 
-      # Step 10 - Configure CMake Release preset
+      # Step 9 - Configure CMake Release preset
       - name: Configure CMake (Release)
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Release
 
-      # Step 11 - Build Release firmware
+      # Step 10 - Build Release firmware
       - name: Build Release Firmware
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
 
-      # Step 12 - Generate HEX and BIN files
+      # Step 11 - Generate HEX and BIN files
       - name: Generate HEX and BIN Files
         working-directory: CNR-Motor-Driver-1.0
         run: |
@@ -90,6 +91,14 @@ jobs:
           echo "=== Generated Files ==="
           ls -la build/Release/*.hex build/Release/*.bin
 
+      # Step 12 - Verify Build Wrapper Output location
+      - name: Verify Build Wrapper Output
+        run: |
+          echo "=== Build Wrapper Output ==="
+          ls -la build-wrapper-output/
+          echo "=== First 5 lines of dump ==="
+          head -5 build-wrapper-output/build-wrapper-dump.json
+
       # Step 13 - Upload Release firmware artifacts
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
@@ -101,19 +110,19 @@ jobs:
             CNR-Motor-Driver-1.0/build/Release/*.bin
           retention-days: 7
 
-      # Step 14 - Upload Build Wrapper output for SonarCloud
+      # Step 14 - Upload Build Wrapper output for Code Quality job
       - name: Upload Build Wrapper Output
         uses: actions/upload-artifact@v4
         with:
           name: build-wrapper-output
-          path: CNR-Motor-Driver-1.0/build-wrapper-output/
+          path: build-wrapper-output/
           retention-days: 1
 
   # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
   code-quality:
     name: Code Quality Checks
     runs-on: ubuntu-latest
-    needs: build  # Wait for build to complete first - needs build wrapper output
+    needs: build
 
     steps:
       # Step 1 - Checkout code
@@ -129,17 +138,19 @@ jobs:
           sudo apt-get install -y doxygen graphviz
 
       # Step 3 - Download Build Wrapper output from build job
+      # Downloaded at repo root level to match sonar-project.properties path
       - name: Download Build Wrapper Output
         uses: actions/download-artifact@v4
         with:
           name: build-wrapper-output
-          path: CNR-Motor-Driver-1.0/build-wrapper-output/
+          path: build-wrapper-output/
 
+      # Step 4 - Verify Build Wrapper Output
       - name: Check Build Wrapper Output
         run: |
           echo "=== Build Wrapper Output Contents ==="
           ls -la build-wrapper-output/
-          cat build-wrapper-output/build-wrapper-dump.json | head -20
+          head -5 build-wrapper-output/build-wrapper-dump.json
 
       # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
       - name: Check File Headers and Copyright Notice
@@ -169,7 +180,6 @@ jobs:
           echo "Doxygen Warnings: $WARNINGS"
           if [ "$WARNINGS" -gt 0 ]; then
             echo "WARNING: $WARNINGS Doxygen warning(s) found."
-            echo "This is a warning only - build will continue."
           else
             echo "PASSED: No Doxygen warnings found."
           fi
@@ -183,12 +193,11 @@ jobs:
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # Uses Build Wrapper output for accurate C code analysis
-      # All config in sonar-project.properties
+      # No projectBaseDir - runs from repo root
+      # sonar-project.properties at repo root
+      # build-wrapper-output at repo root
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: CNR-Motor-Driver-1.0
