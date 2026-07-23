@@ -176,7 +176,7 @@ jobs:
         with:
           name: stm32-doxygen-docs
           path: |
-            CNR-Motor-Driver-1.0/html/
+            CNR-Motor-Driver-1.0/docs/html/
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
