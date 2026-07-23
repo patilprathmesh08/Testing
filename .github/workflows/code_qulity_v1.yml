@@ -133,7 +133,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-wrapper-output
-          path: build-wrapper-output/   
+          path: CNR-Motor-Driver-1.0/build-wrapper-output/
 
       - name: Check Build Wrapper Output
         run: |
