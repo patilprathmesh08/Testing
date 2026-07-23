@@ -21,13 +21,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2 - Install ARM GCC Toolchain ST 14.3.1
+      # Step 2 - Install ARM GNU Toolchain 14.3.rel1
       # Same version as local VS Code development
-      - name: Install ARM GCC Toolchain ST 14.3.1
+      - name: Install ARM GCC Toolchain 14.3.rel1
         run: |
-          wget -q https://github.com/STMicroelectronics/gnu-tools-for-stm32/releases/download/14.3.rel1/gcc-arm-none-eabi-14.3.rel1-x86_64-linux.tar.bz2
-          tar xf gcc-arm-none-eabi-14.3.rel1-x86_64-linux.tar.bz2 -C $HOME
-          echo "$HOME/gcc-arm-none-eabi-14.3.rel1/bin" >> $GITHUB_PATH
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+          tar xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz -C $HOME
+          echo "$HOME/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
       
       # Step 3 - Verify ARM GCC installation
       - name: Verify ARM GCC Version
