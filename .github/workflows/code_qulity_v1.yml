@@ -11,15 +11,19 @@ on:
       - MotorCode
 
 jobs:
-  # ─── JOB 1: BUILD FIRMWARE + SONAR BUILD WRAPPER ────────────────────────────
-  build:
-    name: Build STM32G431 Firmware
+  # ─── SINGLE JOB: BUILD + CODE QUALITY ───────────────────────────────────────
+  # Running in single job ensures paths are identical for
+  # Build Wrapper and SonarCloud scan
+  build-and-analyze:
+    name: Build and Analyze STM32G431
     runs-on: ubuntu-latest
 
     steps:
       # Step 1 - Checkout the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # Step 2 - Install ARM GCC 14.3.1 (same as local VS Code)
       - name: Install ARM GCC Toolchain 14.3.1
@@ -43,9 +47,14 @@ jobs:
         with:
           cmake-version: '3.27'
 
-      # Step 6 - Install Sonar Build Wrapper
-      # Mandatory for C/C++ accurate SonarCloud analysis
-      # Captures all compiler calls during build
+      # Step 6 - Install Doxygen
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      # Step 7 - Install Sonar Build Wrapper
+      # Mandatory for accurate C/C++ SonarCloud analysis
       - name: Install Sonar Build Wrapper
         run: |
           wget -q https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
@@ -54,31 +63,32 @@ jobs:
           rm build-wrapper-linux-x86.zip
           echo "Build Wrapper installed successfully"
 
-      # Step 7 - Configure CMake Debug preset
+      # Step 8 - Configure CMake Debug preset
       - name: Configure CMake (Debug)
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Debug
 
-      # Step 8 - Build Debug firmware with Sonar Build Wrapper
-# Step 8 - Build Debug firmware with Sonar Build Wrapper
+      # Step 9 - Build Debug firmware with Sonar Build Wrapper
+      # Same job = same machine = same absolute paths
+      # Build wrapper captures exact compiler calls
       - name: Build Debug Firmware with Build Wrapper
         working-directory: CNR-Motor-Driver-1.0
         run: |
           build-wrapper-linux-x86-64 \
-            --out-dir ../build-wrapper-output \
+            --out-dir build-wrapper-output \
             cmake --build --preset Debug
 
-      # Step 9 - Configure CMake Release preset
+      # Step 10 - Configure CMake Release preset
       - name: Configure CMake (Release)
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Release
 
-      # Step 10 - Build Release firmware
+      # Step 11 - Build Release firmware
       - name: Build Release Firmware
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
 
-      # Step 11 - Generate HEX and BIN files
+      # Step 12 - Generate HEX and BIN files from ELF
       - name: Generate HEX and BIN Files
         working-directory: CNR-Motor-Driver-1.0
         run: |
@@ -91,14 +101,6 @@ jobs:
           echo "=== Generated Files ==="
           ls -la build/Release/*.hex build/Release/*.bin
 
-      # Step 12 - Verify Build Wrapper Output location
-      - name: Verify Build Wrapper Output
-        run: |
-          echo "=== Build Wrapper Output ==="
-          ls -la build-wrapper-output/
-          echo "=== First 5 lines of dump ==="
-          head -5 build-wrapper-output/build-wrapper-dump.json
-
       # Step 13 - Upload Release firmware artifacts
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
@@ -109,48 +111,6 @@ jobs:
             CNR-Motor-Driver-1.0/build/Release/*.hex
             CNR-Motor-Driver-1.0/build/Release/*.bin
           retention-days: 7
-
-      # Step 14 - Upload Build Wrapper output for Code Quality job
-      - name: Upload Build Wrapper Output
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-wrapper-output
-          path: build-wrapper-output/
-          retention-days: 1
-
-  # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
-  code-quality:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      # Step 1 - Checkout code
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Step 2 - Install Doxygen
-      - name: Install Doxygen
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y doxygen graphviz
-
-      # Step 3 - Download Build Wrapper output from build job
-      # Downloaded at repo root level to match sonar-project.properties path
-      - name: Download Build Wrapper Output
-        uses: actions/download-artifact@v4
-        with:
-          name: build-wrapper-output
-          path: build-wrapper-output/
-
-      # Step 4 - Verify Build Wrapper Output
-      - name: Check Build Wrapper Output
-        run: |
-          echo "=== Build Wrapper Output Contents ==="
-          ls -la build-wrapper-output/
-          head -5 build-wrapper-output/build-wrapper-dump.json
 
       # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
       - name: Check File Headers and Copyright Notice
@@ -193,12 +153,12 @@ jobs:
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # No projectBaseDir - runs from repo root
+      # Runs in same job as build - paths are identical
       # sonar-project.properties at repo root
-      # build-wrapper-output at repo root
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_SCANNER_OPTS: -X
+        with:
+          projectBaseDir: CNR-Motor-Driver-1.0
