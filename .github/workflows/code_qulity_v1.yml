@@ -21,12 +21,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2 - Install ARM GCC Toolchain
-      - name: Install ARM GCC Toolchain
+      # Step 2 - Install ARM GNU Toolchain 14.3.rel1
+      # Same version as local VS Code development
+      - name: Install ARM GCC Toolchain 14.3.rel1
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
-
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+          tar xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz -C $HOME
+          echo "$HOME/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+          rm arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+      
       # Step 3 - Verify ARM GCC installation
       - name: Verify ARM GCC Version
         run: arm-none-eabi-gcc --version
@@ -97,18 +100,7 @@ jobs:
           ls -la build/Debug/*.hex build/Debug/*.bin
           ls -la build/Release/*.hex build/Release/*.bin
 
-      # Step 14 - Upload Debug artifacts (elf, hex, bin)
-      - name: Upload Debug Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware-debug
-          path: |
-            CNR-Motor-Driver-1.0/build/Debug/**/*.elf
-            CNR-Motor-Driver-1.0/build/Debug/*.hex
-            CNR-Motor-Driver-1.0/build/Debug/*.bin
-          retention-days: 7
-
-      # Step 15 - Upload Release artifacts (elf, hex, bin)
+      # Step 14 - Upload Release artifacts (elf, hex, bin)
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -184,7 +176,6 @@ jobs:
         with:
           name: stm32-doxygen-docs
           path: |
-            CNR-Motor-Driver-1.0/doxygen_output.log
             CNR-Motor-Driver-1.0/docs/html/
           retention-days: 7
 
