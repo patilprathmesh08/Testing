@@ -28,6 +28,7 @@ jobs:
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
           tar xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz -C $HOME
           echo "$HOME/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+          rm arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
       
       # Step 3 - Verify ARM GCC installation
       - name: Verify ARM GCC Version
