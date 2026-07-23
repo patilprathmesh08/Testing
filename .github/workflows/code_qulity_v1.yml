@@ -60,13 +60,13 @@ jobs:
         run: cmake --preset Debug
 
       # Step 8 - Build Debug firmware with Sonar Build Wrapper
-      # Output saved at repo root level: /github/workspace/build-wrapper-output/
+# Step 8 - Build Debug firmware with Sonar Build Wrapper
       - name: Build Debug Firmware with Build Wrapper
+        working-directory: CNR-Motor-Driver-1.0
         run: |
           build-wrapper-linux-x86-64 \
-            --out-dir build-wrapper-output \
-            cmake --build --preset Debug \
-            --build-directory CNR-Motor-Driver-1.0/build/Debug
+            --out-dir ../build-wrapper-output \
+            cmake --build --preset Debug
 
       # Step 9 - Configure CMake Release preset
       - name: Configure CMake (Release)
