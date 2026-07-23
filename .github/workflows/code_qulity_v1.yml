@@ -53,10 +53,6 @@ jobs:
           echo "$PWD/build-wrapper-linux-x86" >> $GITHUB_PATH
           rm build-wrapper-linux-x86.zip
 
-      # Step 7 - Verify Build Wrapper
-      - name: Verify Build Wrapper
-        run: build-wrapper-linux-x86-64 --version
-
       # Step 8 - Configure CMake Debug preset
       - name: Configure CMake (Debug)
         working-directory: CNR-Motor-Driver-1.0
