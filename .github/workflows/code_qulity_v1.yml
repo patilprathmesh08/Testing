@@ -1,7 +1,17 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # STM32 Motor Controller CI Pipeline
-# Version: v9 (two jobs: build, then code-quality - all fixes consolidated)
+# Version: v10 (added missing job 2 toolchain verification + exec test)
 # Date: 24-07-2026
+#
+# Debugging the recurring "67 detected, 67 skipped, 0 analyzed" CFamily
+# error in the two-job setup. All static checks (file existence, paths,
+# permissions) look correct, so this version adds two things the debug
+# step was missing: (1) job 2 never verified its reinstalled toolchain
+# actually runs on the host - it does now, right after install, matching
+# job 1's existing check; (2) the pre-Sonar debug step now actually
+# EXECUTES the compiler at its full baked-in path, not just lists the
+# file, since a file existing with correct permissions doesn't guarantee
+# it can actually run.
 #
 # Two jobs, run on SEPARATE, fresh runners. Anything job 2 needs from job 1
 # must be re-created or passed explicitly via upload-artifact/download-artifact:
@@ -65,7 +75,9 @@ jobs:
 
       # Step 3 - Verify ARM GCC version
       - name: Verify ARM GCC Version
-        run: arm-none-eabi-gcc --version
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          arm-none-eabi-gcc --version
 
       # Step 4 - Install Ninja
       - name: Install Ninja
@@ -281,7 +293,18 @@ jobs:
         run: |
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
           tar xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz -C $GITHUB_WORKSPACE
+          echo "$GITHUB_WORKSPACE/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
           rm arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+
+      # Step 2a - Verify the reinstalled toolchain actually works on THIS
+      # runner, on the host, before Sonar ever tries to use it inside its
+      # own container. Job 1 already does this check; job 2 never did.
+      - name: Verify ARM GCC Version (job 2 host)
+        run: |
+          echo "GITHUB_WORKSPACE = $GITHUB_WORKSPACE"
+          echo "Resolved compiler path:"
+          which arm-none-eabi-gcc
+          arm-none-eabi-gcc --version
 
       # Step 3 - Download compile_commands.json produced by the build job
       - name: Download compile_commands.json
@@ -302,8 +325,10 @@ jobs:
         run: |
           echo "== Src folder check =="
           ls -la CNR-Motor-Driver-1.0/Src | head -5
-          echo "== Toolchain check =="
+          echo "== Toolchain check (listing) =="
           ls -la $GITHUB_WORKSPACE/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin 2>/dev/null | head -5
+          echo "== Toolchain check (actual execution, host) =="
+          $GITHUB_WORKSPACE/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc --version
           echo "== compile_commands.json sample =="
           head -c 500 CNR-Motor-Driver-1.0/build-wrapper-output/compile_commands.json
           echo ""
