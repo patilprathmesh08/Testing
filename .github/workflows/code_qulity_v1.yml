@@ -1,27 +1,31 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # STM32 Motor Controller CI Pipeline
-# Version: v8 (back to single job, all fixes + coverage consolidated)
+# Version: v9 (two jobs: build, then code-quality - all fixes consolidated)
 # Date: 24-07-2026
 #
-# This is the single-job version. Everything discovered/fixed across the
-# earlier two-job experiment is folded back in here:
+# Two jobs, run on SEPARATE, fresh runners. Anything job 2 needs from job 1
+# must be re-created or passed explicitly via upload-artifact/download-artifact:
+#   - Source code: re-checked out fresh in job 2
+#   - ARM toolchain: reinstalled fresh in job 2 at the same workspace path,
+#     because SonarCloud's analyzer invokes the compiler directly during
+#     analysis, not just reads paths from JSON
+#   - compile_commands.json: passed via artifact upload/download
+#   - coverage-sonarqube.xml: passed via artifact upload/download
+#
+# Fixes folded in from earlier debugging (all confirmed against real CI
+# runs, not assumptions):
 #   - ARM GCC toolchain installed inside $GITHUB_WORKSPACE (not $HOME), so
 #     it is visible to the SonarCloud action's Docker container
-#   - compile_commands.json path-fix step rewrites BOTH the source paths
-#     and the toolchain/compiler path (Sonar's analyzer invokes the
-#     compiler directly during analysis, not just reads paths from JSON)
-#   - sonar-project.properties lives inside CNR-Motor-Driver-1.0/, so the
-#     SonarCloud Scan step passes projectBaseDir: CNR-Motor-Driver-1.0
-#   - Host-side unit tests + code coverage (plain Unity + gcc --coverage +
-#     gcovr) for motor_telemetry_math.c, a standalone duplicate of some
-#     pure math also inline in main.c (main.c itself was NOT modified -
-#     see motor_telemetry_math.c's file header for what that means)
-#
-# Since everything runs in ONE job now, there is no cross-job artifact
-# upload/download needed for compile_commands.json or the coverage report -
-# they're both already on disk when the SonarCloud Scan step runs later in
-# the same job. Upload steps for them are kept anyway, purely so you can
-# download and inspect either file manually from the Actions run UI.
+#   - compile_commands.json path-fix rewrites BOTH the source path AND the
+#     toolchain/compiler path
+#   - sonar-project.properties lives inside CNR-Motor-Driver-1.0/, so
+#     projectBaseDir: CNR-Motor-Driver-1.0 is passed to the Sonar step
+#   - sonar.sources and sonar.coverageReportPaths resolve relative to
+#     projectBaseDir; sonar.cfamily.compile-commands resolves relative to
+#     the repo root instead - different sensors, different behavior,
+#     confirmed via real scanner error messages, not guessed
+#   - motor_telemetry_math.c/.h is a STANDALONE DUPLICATE of some math also
+#     inline in main.c (main.c was not modified - see that file's header)
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: STM32 Motor Controller CI Pipeline
@@ -37,9 +41,9 @@ on:
       - MotorCode
 
 jobs:
-  # ─── SINGLE JOB: BUILD + COVERAGE + CODE QUALITY ────────────────────────────
-  build-and-analyze:
-    name: Build and Analyze STM32G431
+  # ─── JOB 1: BUILD ────────────────────────────────────────────────────────
+  build:
+    name: Build STM32G431 Firmware
     runs-on: ubuntu-latest
 
     steps:
@@ -51,7 +55,7 @@ jobs:
 
       # Step 2 - Install ARM GCC 14.3.1 (same as local VS Code)
       # Extracted into $GITHUB_WORKSPACE (not $HOME) so the toolchain is
-      # visible to the SonarCloud action's Docker container later on.
+      # visible to the SonarCloud action's Docker container in job 2.
       - name: Install ARM GCC Toolchain 14.3.1
         run: |
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
@@ -80,7 +84,6 @@ jobs:
           sudo apt-get install -y doxygen graphviz
 
       # Step 7 - Install Sonar Build Wrapper
-      # Mandatory for accurate C/C++ SonarCloud analysis
       - name: Install Sonar Build Wrapper
         run: |
           wget -q https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
@@ -103,12 +106,10 @@ jobs:
             cmake --build --preset Debug
 
       # Step 10 - Fix paths in compile_commands.json
-      # Fixes TWO paths:
-      #   1. Source path: runner checkout path -> container path
-      #   2. Compiler/toolchain path: workspace-relative toolchain path ->
-      #      container path (needed because compile_commands.json stores
-      #      the absolute path to the arm-none-eabi-gcc binary, and that
-      #      must also resolve inside the SonarCloud Docker container)
+      # Fixes TWO paths: source paths AND the toolchain/compiler path,
+      # since compile_commands.json stores the absolute path to the
+      # arm-none-eabi-gcc binary too, and that must also resolve inside
+      # the SonarCloud Docker container in job 2.
       - name: Fix Build Wrapper Paths for SonarCloud
         working-directory: CNR-Motor-Driver-1.0
         run: |
@@ -119,7 +120,9 @@ jobs:
           echo "Paths fixed successfully"
           head -3 build-wrapper-output/compile_commands.json
 
-      # Step 10a - Upload compile_commands.json (for manual inspection only)
+      # Step 10a - Upload compile_commands.json
+      # This is how job 2 (code-quality) receives it, since jobs don't
+      # share a filesystem.
       - name: Upload compile_commands.json
         uses: actions/upload-artifact@v4
         with:
@@ -163,11 +166,8 @@ jobs:
 
       # ─── UNIT TESTS + CODE COVERAGE (host-side) ─────────────────────────────
       # Tests motor_telemetry_math.c/.h under CNR-Motor-Driver-1.0/Src and
-      # Inc. Runs on host gcc, not the ARM target, since there is no real
-      # hardware on the CI runner. This module is a STANDALONE DUPLICATE of
-      # some math also inline in main.c - main.c was not modified, so this
-      # coverage reflects the duplicate, not main.c directly. See
-      # motor_telemetry_math.c's file header for what that means in practice.
+      # Inc. Runs on host gcc, not the ARM target. STANDALONE DUPLICATE of
+      # some math also inline in main.c - see motor_telemetry_math.c header.
       - name: Install gcovr
         run: |
           sudo apt-get install -y gcovr
@@ -179,11 +179,9 @@ jobs:
           git clone --depth 1 --branch v2.6.0 https://github.com/ThrowTheSwitch/Unity.git vendor/unity
 
       - name: Compile and Run Unit Tests with Coverage Instrumentation
-        # Source and test files are compiled using ABSOLUTE paths. This
-        # matters: gcov re-resolves each source file's location later from
-        # the object file's own directory, not from the original compile
-        # directory. A relative path like ../Src/foo.c resolves incorrectly
-        # at that point - verified locally before landing this.
+        # Absolute paths matter here: gcov re-resolves each source file's
+        # location from the object file's own directory, not the original
+        # compile directory - a relative path resolves incorrectly there.
         working-directory: CNR-Motor-Driver-1.0/unit_tests
         run: |
           mkdir -p build
@@ -202,13 +200,10 @@ jobs:
           ./build/test_runner
 
       - name: Generate Coverage Report (SonarQube XML)
-        # --root .. points gcovr at CNR-Motor-Driver-1.0 (the Sonar project
-        # base dir), so file paths in the report come out as "Src/..." -
-        # matching sonar.sources=Src exactly.
-        # Filter is anchored (.*/Src/...$) to include ONLY the production
-        # file, not the test file itself (which also ends in the same
-        # "motor_telemetry_math.c" suffix - verified locally before
-        # landing this, a loose filter matched both).
+        # --root .. points gcovr at CNR-Motor-Driver-1.0, so report paths
+        # come out as "Src/..." matching sonar.sources=Src. Filter is
+        # anchored (.*/Src/...$) so it includes ONLY the production file,
+        # not the test file (which also ends in the same filename suffix).
         working-directory: CNR-Motor-Driver-1.0/unit_tests
         run: |
           echo "== Full coverage summary (all compiled files) =="
@@ -218,8 +213,7 @@ jobs:
           echo "== Generated coverage report =="
           cat build/coverage-sonarqube.xml
 
-      # Kept for manual download/inspection only - already on disk for the
-      # SonarCloud Scan step later in this same job.
+      # Passed to job 2 (code-quality), since jobs don't share a filesystem.
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
@@ -267,18 +261,56 @@ jobs:
           path: CNR-Motor-Driver-1.0/docs/html/
           retention-days: 7
 
-      # ─── DEBUG STEP: quick sanity check before Sonar runs ───────────────────
+  # ─── JOB 2: CODE QUALITY (SONARCLOUD) ────────────────────────────────────
+  code-quality:
+    name: SonarCloud Code Quality Scan
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      # Step 1 - Checkout the repository code (fresh runner, empty filesystem)
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2 - Reinstall ARM GCC toolchain at the same workspace path
+      # Required because SonarCloud's CFamily analyzer invokes the compiler
+      # directly during analysis - the binary must physically exist here.
+      - name: Install ARM GCC Toolchain 14.3.1
+        run: |
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+          tar xf arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz -C $GITHUB_WORKSPACE
+          rm arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz
+
+      # Step 3 - Download compile_commands.json produced by the build job
+      - name: Download compile_commands.json
+        uses: actions/download-artifact@v4
+        with:
+          name: compile-commands-json
+          path: CNR-Motor-Driver-1.0/build-wrapper-output
+
+      # Step 4 - Download coverage report produced by the build job
+      - name: Download Coverage Report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-sonarqube-xml
+          path: CNR-Motor-Driver-1.0/unit_tests/build
+
+      # Step 5 - Debug check before Sonar runs
       - name: Debug Sonar Paths
         run: |
           echo "== Src folder check =="
           ls -la CNR-Motor-Driver-1.0/Src | head -5
+          echo "== Toolchain check =="
+          ls -la $GITHUB_WORKSPACE/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin 2>/dev/null | head -5
           echo "== compile_commands.json sample =="
           head -c 500 CNR-Motor-Driver-1.0/build-wrapper-output/compile_commands.json
           echo ""
           echo "== Coverage report check =="
           ls -la CNR-Motor-Driver-1.0/unit_tests/build/coverage-sonarqube.xml
 
-      # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
+      # ─── CHECK: SONARCLOUD SCAN ──────────────────────────────────────────
       # projectBaseDir set since sonar-project.properties lives inside
       # CNR-Motor-Driver-1.0/, not the repo root.
       - name: SonarCloud Scan
