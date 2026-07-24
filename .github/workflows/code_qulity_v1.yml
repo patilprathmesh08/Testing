@@ -12,8 +12,6 @@ on:
 
 jobs:
   # ─── SINGLE JOB: BUILD + CODE QUALITY ───────────────────────────────────────
-  # Running in single job ensures paths are identical for
-  # Build Wrapper and SonarCloud scan
   build-and-analyze:
     name: Build and Analyze STM32G431
     runs-on: ubuntu-latest
@@ -62,22 +60,13 @@ jobs:
           echo "$PWD/build-wrapper-linux-x86" >> $GITHUB_PATH
           rm build-wrapper-linux-x86.zip
           echo "Build Wrapper installed successfully"
-  
-      - name: List Build Wrapper Output
+
+      # Step 8 - Configure CMake Debug preset
+      - name: Configure CMake (Debug)
         working-directory: CNR-Motor-Driver-1.0
-        run: |
-          echo "=== Build wrapper output files ==="
-          ls -la build-wrapper-output/
-          echo "=== compile_commands.json first 5 lines ==="
-          head -5 build-wrapper-output/compile_commands.json || echo "NOT FOUND"
-            # Step 8 - Configure CMake Debug preset
-            - name: Configure CMake (Debug)
-              working-directory: CNR-Motor-Driver-1.0
-              run: cmake --preset Debug
+        run: cmake --preset Debug
 
       # Step 9 - Build Debug firmware with Sonar Build Wrapper
-      # Same job = same machine = same absolute paths
-      # Build wrapper captures exact compiler calls
       - name: Build Debug Firmware with Build Wrapper
         working-directory: CNR-Motor-Driver-1.0
         run: |
@@ -85,17 +74,36 @@ jobs:
             --out-dir build-wrapper-output \
             cmake --build --preset Debug
 
-      # Step 10 - Configure CMake Release preset
+      # Step 10 - Fix paths in compile_commands.json
+      # SonarCloud Docker container maps workspace to /github/workspace/
+      # But build wrapper records /home/runner/work/Testing/Testing/
+      # We replace paths so SonarCloud can find files correctly
+      - name: Fix Build Wrapper Paths for SonarCloud
+        working-directory: CNR-Motor-Driver-1.0
+        run: |
+          echo "=== Before path fix ==="
+          head -3 build-wrapper-output/compile_commands.json
+          
+          sed -i 's|/home/runner/work/Testing/Testing|/github/workspace|g' \
+            build-wrapper-output/compile_commands.json
+          sed -i 's|/home/runner/work/Testing/Testing|/github/workspace|g' \
+            build-wrapper-output/build-wrapper-dump.json
+          
+          echo "=== After path fix ==="
+          head -3 build-wrapper-output/compile_commands.json
+          echo "Paths fixed successfully"
+
+      # Step 11 - Configure CMake Release preset
       - name: Configure CMake (Release)
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --preset Release
 
-      # Step 11 - Build Release firmware
+      # Step 12 - Build Release firmware
       - name: Build Release Firmware
         working-directory: CNR-Motor-Driver-1.0
         run: cmake --build --preset Release
 
-      # Step 12 - Generate HEX and BIN files from ELF
+      # Step 13 - Generate HEX and BIN files
       - name: Generate HEX and BIN Files
         working-directory: CNR-Motor-Driver-1.0
         run: |
@@ -108,7 +116,7 @@ jobs:
           echo "=== Generated Files ==="
           ls -la build/Release/*.hex build/Release/*.bin
 
-      # Step 13 - Upload Release firmware artifacts
+      # Step 14 - Upload Release firmware artifacts
       - name: Upload Release Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -160,8 +168,8 @@ jobs:
           retention-days: 7
 
       # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # Runs in same job as build - paths are identical
-      # sonar-project.properties at repo root
+      # Uses SonarCloud github action with projectBaseDir
+      # compile_commands.json paths fixed to match Docker paths
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3.1.0
         env:
