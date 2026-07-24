@@ -75,23 +75,13 @@ jobs:
             cmake --build --preset Debug
 
       # Step 10 - Fix paths in compile_commands.json
-      # SonarCloud Docker container maps workspace to /github/workspace/
-      # But build wrapper records /home/runner/work/Testing/Testing/
-      # We replace paths so SonarCloud can find files correctly
       - name: Fix Build Wrapper Paths for SonarCloud
         working-directory: CNR-Motor-Driver-1.0
         run: |
-          echo "=== Before path fix ==="
-          head -3 build-wrapper-output/compile_commands.json
-          
-          sed -i 's|/home/runner/work/Testing/Testing|/github/workspace|g' \
+          sed -i 's|/home/runner/work/Testing/Testing/CNR-Motor-Driver-1.0|/github/workspace/CNR-Motor-Driver-1.0|g' \
             build-wrapper-output/compile_commands.json
-          sed -i 's|/home/runner/work/Testing/Testing|/github/workspace|g' \
-            build-wrapper-output/build-wrapper-dump.json
-          
-          echo "=== After path fix ==="
-          head -3 build-wrapper-output/compile_commands.json
           echo "Paths fixed successfully"
+          head -3 build-wrapper-output/compile_commands.json
 
       # Step 11 - Configure CMake Release preset
       - name: Configure CMake (Release)
@@ -175,5 +165,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: CNR-Motor-Driver-1.0
+      
