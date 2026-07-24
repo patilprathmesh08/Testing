@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # STM32 Motor Controller CI Pipeline
-# Version: v2 (post SonarCloud C-analysis fix)
+# Version: v3 (post SonarCloud C-analysis fix + compile_commands.json artifact)
 # Date: 24-07-2026
 # Change from v1: ARM GCC toolchain now installed inside $GITHUB_WORKSPACE
 # instead of $HOME, and compile_commands.json path-fix step now rewrites
@@ -8,6 +8,8 @@
 # SonarCloud action (v3.1.0) runs in a Docker container that only mounts
 # $GITHUB_WORKSPACE, so anything installed to $HOME was invisible to it,
 # causing every C compilation unit to be skipped as "unsupported".
+# Change from v2: compile_commands.json is now uploaded as a build artifact
+# for easy inspection/debugging without re-running the whole pipeline.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: STM32 Motor Controller CI Pipeline
@@ -105,6 +107,16 @@ jobs:
             build-wrapper-output/compile_commands.json
           echo "Paths fixed successfully"
           head -3 build-wrapper-output/compile_commands.json
+
+      # Step 10a - Upload compile_commands.json for debugging
+      # Lets you inspect the exact paths Sonar will use without re-running
+      # the whole pipeline. Download from the workflow run's Artifacts section.
+      - name: Upload compile_commands.json
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-commands-json
+          path: CNR-Motor-Driver-1.0/build-wrapper-output/compile_commands.json
+          retention-days: 7
 
       # Step 11 - Configure CMake Release preset
       - name: Configure CMake (Release)
