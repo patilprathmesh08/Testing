@@ -1,0 +1,14 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:67:6:HAL_MspInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:96:6:HAL_ADC_MspInit	112	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:143:6:HAL_ADC_MspDeInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:175:6:HAL_CORDIC_MspInit	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:198:6:HAL_CORDIC_MspDeInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:220:6:HAL_SPI_MspInit	48	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:258:6:HAL_SPI_MspDeInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:288:6:HAL_TIM_PWM_MspInit	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:311:6:HAL_TIM_Encoder_MspInit	56	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:373:6:HAL_TIM_MspPostInit	40	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:407:6:HAL_TIM_PWM_MspDeInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:433:6:HAL_TIM_Encoder_MspDeInit	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:484:6:HAL_UART_MspInit	128	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_msp.c:611:6:HAL_UART_MspDeInit	16	static

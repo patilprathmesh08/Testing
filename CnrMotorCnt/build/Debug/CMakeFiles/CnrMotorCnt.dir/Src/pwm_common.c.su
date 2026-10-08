@@ -1,0 +1,13 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_adc.h:8441:22:LL_ADC_ClearFlag_JEOS	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_adc.h:8836:22:LL_ADC_EnableIT_JEOS	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h:913:22:LL_APB1_GRP1_EnableClock	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h:995:26:LL_APB1_GRP1_IsEnabledClock	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_bus.h:1069:22:LL_APB1_GRP1_DisableClock	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:4007:22:LL_TIM_SetTriggerOutput	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:4057:22:LL_TIM_SetSlaveMode	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:4087:22:LL_TIM_SetTriggerInput	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5477:22:LL_TIM_ClearFlag_CC1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5488:26:LL_TIM_IsActiveFlag_CC1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:6586:22:LL_TIM_GenerateEvent_UPDATE	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/pwm_common.c:54:13:startTimers	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/pwm_common.c:96:13:waitForPolarizationEnd	32	static

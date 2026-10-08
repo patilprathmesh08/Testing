@@ -1,0 +1,9 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_adc.h:8441:22:LL_ADC_ClearFlag_JEOS	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5455:22:LL_TIM_ClearFlag_UPDATE	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5653:22:LL_TIM_ClearFlag_BRK	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5664:26:LL_TIM_IsActiveFlag_BRK	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5675:22:LL_TIM_ClearFlag_BRK2	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_tim.h:5686:26:LL_TIM_IsActiveFlag_BRK2	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_mc_it.c:71:6:ADC1_2_IRQHandler	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_mc_it.c:95:6:TIM1_UP_TIM16_IRQHandler	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_mc_it.c:109:6:TIM1_BRK_TIM15_IRQHandler	8	static

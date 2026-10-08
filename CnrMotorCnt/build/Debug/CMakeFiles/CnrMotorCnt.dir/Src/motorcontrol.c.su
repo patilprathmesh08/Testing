@@ -1,0 +1,2 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/motorcontrol.c:49:13:MX_MotorControl_Init	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/motorcontrol.c:57:6:vPortSetupTimerInterrupt	8	static

@@ -1,0 +1,13 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Inc/speed_pos_fdbk.h:126:23:SPD_GetElAngle	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Inc/speed_torq_ctrl.h:251:39:STC_GetSpeedSensor	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Inc/pwm_curr_fdbk.h:368:20:PWMC_GetPhaseCurrents	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Inc/pwm_curr_fdbk.h:431:20:PWMC_GetPWMState	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Inc/enc_align_ctrl.h:121:20:EAC_IsAligned	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:112:13:FOC_Init	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:189:6:TSK_MF_StopProcessing	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:208:13:TSK_MediumFrequencyTaskM1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:474:13:FOC_Clear	32	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:508:13:FOC_InitAdditionalMethods	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:531:13:FOC_CalcCurrRef	32	static,ignoring_inline_asm
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:586:16:FOC_HighFrequencyTask	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks_foc.c:636:17:FOC_CurrControllerM1	40	static

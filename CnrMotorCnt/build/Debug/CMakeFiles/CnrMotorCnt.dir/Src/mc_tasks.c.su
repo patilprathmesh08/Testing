@@ -1,0 +1,17 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_ll_gpio.h:719:22:LL_GPIO_LockPin	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Inc/mc_stm_types.h:112:22:LL_DMA_ClearFlag_TC	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../Inc/mc_stm_types.h:126:26:LL_DMA_IsActiveFlag_TC	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/cmake/stm32cubemx/../../MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Inc/enc_align_ctrl.h:99:20:EAC_SetRestartState	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:79:13:MCboot	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:155:13:MC_RunMotorControlTasks	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:238:13:TSK_SetChargeBootCapDelayM1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:249:13:TSK_ChargeBootCapDelayHasElapsedM1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:265:13:TSK_SetStopPermanencyTimeM1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:276:13:TSK_StopPermanencyTimeHasElapsedM1	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:302:16:TSK_HighFrequencyTask	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:334:13:TSK_SafetyTask	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:357:13:TSK_SafetyTask_PWMOFF	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:405:13:TSK_HardwareFaultTask	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:420:6:startMediumFrequencyTask	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:448:6:StartSafetyTask	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/mc_tasks.c:464:13:mc_lock_pins	8	static

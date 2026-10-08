@@ -1,0 +1,6 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:25:6:cnr_capture_log	56	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:42:6:cnr_follow_capture_log	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:72:6:cnr_position_command_handler	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:118:6:cnr_motor_start	24	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:154:6:cnr_motor_stop	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_position_control.c:193:6:cnr_execute_command	16	static

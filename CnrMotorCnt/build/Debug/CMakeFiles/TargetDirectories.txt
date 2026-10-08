@@ -1,0 +1,8 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/CMakeFiles/CnrMotorCnt.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/CMakeFiles/edit_cache.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/CMakeFiles/rebuild_cache.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/CMakeFiles/FreeRTOS.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/CMakeFiles/MotorControl.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir

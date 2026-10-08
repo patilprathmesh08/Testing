@@ -1,0 +1,2 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_overcurrent.c:28:13:cnr_read_phase_currents_checked	32	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_overcurrent.c:54:6:cnr_overcurrent_enable	16	static

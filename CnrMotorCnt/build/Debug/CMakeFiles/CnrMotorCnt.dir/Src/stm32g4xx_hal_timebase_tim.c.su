@@ -1,0 +1,3 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_timebase_tim.c:41:19:HAL_InitTick	56	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_timebase_tim.c:110:6:HAL_SuspendTick	4	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_hal_timebase_tim.c:122:6:HAL_ResumeTick	4	static

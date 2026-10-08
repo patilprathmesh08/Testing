@@ -1,0 +1,3 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Src/pqd_motor_power_measurement.c:74:13:PQD_CalcElMotorPower	32	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Src/pqd_motor_power_measurement.c:107:13:PQD_Clear	16	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/MCSDK_v6.4.2-Full/MotorControl/MCSDK/MCLib/Any/Src/pqd_motor_power_measurement.c:132:16:PQD_GetAvrgElMotorPowerW	32	static

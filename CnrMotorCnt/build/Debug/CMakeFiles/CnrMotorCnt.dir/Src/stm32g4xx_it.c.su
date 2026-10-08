@@ -1,0 +1,2 @@
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_it.c:79:6:USART3_IRQHandler	8	static
+G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/Src/stm32g4xx_it.c:93:6:TIM6_DAC_IRQHandler	8	static
