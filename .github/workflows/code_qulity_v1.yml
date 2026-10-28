@@ -3,14 +3,12 @@ name: STM32 Motor Controller CI Pipeline
 on:
   push:
     branches:
-      - master
-      - develop
-      - motor_param_tunning
+      - main
+      - MotorCode
   pull_request:
     branches:
-      - master
-      - develop
-      - motor_param_tunning
+      - main
+      - MotorCode
 
 # ─── PROJECT FOLDER (set once, used everywhere) ────────────────────────────────
 # Folder in the repository that contains CMakeLists.txt and CMakePresets.json.
