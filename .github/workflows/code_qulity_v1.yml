@@ -1,14 +1,16 @@
-name: STM32 Motor Controller CI Pipeline
+name: STM32 CNR Motor Controller CI Pipeline
 
+# CI runs on push / PR to poc and motor_param_tunning, or manually with "Run workflow".
 on:
+  workflow_dispatch:          # manual run: build any branch already on GitHub
   push:
     branches:
       - main
       - MotorCode
   pull_request:
     branches:
-      - main
-      - MotorCode
+      - poc
+      - motor_param_tunning
 
 # ─── PROJECT FOLDER (set once, used everywhere) ────────────────────────────────
 # Folder in the repository that contains CMakeLists.txt and CMakePresets.json.
@@ -17,8 +19,9 @@ env:
 
 jobs:
   # ─── JOB 1: BUILD FIRMWARE ──────────────────────────────────────────────────
+  # Tool versions match the developer PC: ARM GCC 15.2.1, CMake 4.3.1, Ninja 1.13.2
   build:
-    name: Build STM32G431 Firmware
+    name: Build CNR motor controller Firmware
     runs-on: ubuntu-latest
 
     steps:
@@ -36,117 +39,84 @@ jobs:
           fi
           echo "OK: using project folder '$PROJECT_DIR'"
 
-      # Step 3 - Install ARM GCC Toolchain and Ninja
-      - name: Install ARM GCC Toolchain and Ninja
+      # Step 3 - Install Arm GNU Toolchain 15.2.rel1 (same as the PC)
+      - name: Install ARM GCC Toolchain
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi ninja-build
+          TC="arm-gnu-toolchain-15.2.rel1-x86_64-arm-none-eabi"
+          wget -q "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/${TC}.tar.xz"
+          tar -xf "${TC}.tar.xz" -C "$HOME"
+          echo "$HOME/${TC}/bin" >> "$GITHUB_PATH"    # put arm-none-eabi-gcc on PATH for next steps
 
-      # Step 4 - Install CMake
+      # Step 4 - Install Ninja 1.13.2 (same as the PC)
+      - name: Install Ninja
+        run: |
+          wget -q "https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-linux.zip"
+          unzip -q ninja-linux.zip -d "$HOME/ninja"
+          echo "$HOME/ninja" >> "$GITHUB_PATH"
+
+      # Step 5 - Install CMake 4.3.1 (same as the PC)
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: '3.27'
+          cmake-version: '4.3.1'
 
-      # Step 5 - Print tool versions (useful when a build breaks)
-      - name: Tool Versions
+      # Step 6 - Print tool versions and stop if any of them does not match the PC
+      - name: Check Tool Versions
         run: |
           arm-none-eabi-gcc --version
           ninja --version
           cmake --version
+          FAIL=0
+          arm-none-eabi-gcc --version | head -1 | grep -q " 15.2.1 " || { echo "ERROR: ARM GCC is not 15.2.1"; FAIL=1; }
+          [ "$(ninja --version)" = "1.13.2" ]                         || { echo "ERROR: Ninja is not 1.13.2"; FAIL=1; }
+          cmake --version | head -1 | grep -q " 4.3.1$"               || { echo "ERROR: CMake is not 4.3.1"; FAIL=1; }
+          if [ "$FAIL" -ne 0 ]; then exit 1; fi
+          echo "OK: tool versions match the developer PC"
 
-      # Step 6 - Configure and build Debug firmware
+      # Step 7 - Configure and build Debug firmware (CMakeLists.txt also creates the .bin)
       - name: Build Debug Firmware
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           cmake --preset Debug
           cmake --build --preset Debug
+          ls -l build/Debug/CnrMotorCnt.elf build/Debug/CnrMotorCnt.bin
 
-      # Step 7 - Configure and build Release firmware
+      # Step 8 - Build Release firmware (compile check only, not uploaded)
       - name: Build Release Firmware
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           cmake --preset Release
           cmake --build --preset Release
 
-      # Step 8 - Upload Debug ELF artifact
-      - name: Upload Debug ELF Artifact
+      # Step 9 - Upload Debug firmware (.elf for debugging, .bin for flashing)
+      - name: Upload Debug Firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware-debug
-          path: ${{ env.PROJECT_DIR }}/build/Debug/**/*.elf
+          path: |
+            ${{ env.PROJECT_DIR }}/build/Debug/CnrMotorCnt.elf
+            ${{ env.PROJECT_DIR }}/build/Debug/CnrMotorCnt.bin
           if-no-files-found: error
           retention-days: 7
 
-      # Step 9 - Upload Release ELF artifact
-      - name: Upload Release ELF Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware-release
-          path: ${{ env.PROJECT_DIR }}/build/Release/**/*.elf
-          if-no-files-found: error
-          retention-days: 7
-
-  # ─── JOB 2: CODE QUALITY CHECKS ─────────────────────────────────────────────
+  # ─── JOB 2: DOXYGEN DOCUMENTATION ───────────────────────────────────────────
   # Runs in parallel with build job
-  code-quality:
-    name: Code Quality Checks
+  doxygen:
+    name: Doxygen Documentation
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1 - Checkout code (full history for SonarCloud)
+      # Step 1 - Checkout the repository code
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # Step 2 - Stop early with a clear message if PROJECT_DIR is wrong
-      - name: Check Project Folder
-        run: |
-          for dir in Src Inc application/Src application/Inc; do
-            if [ ! -d "$PROJECT_DIR/$dir" ]; then
-              echo "ERROR: '$PROJECT_DIR/$dir' not found."
-              exit 1
-            fi
-          done
-          echo "OK: using project folder '$PROJECT_DIR'"
-
-      # Step 3 - Install Doxygen, ARM GCC and Ninja
-      # (ARM GCC + Ninja are needed only to generate compile_commands.json for SonarCloud)
-      - name: Install Tools
+      # Step 2 - Install Doxygen (graphviz draws the call/include graphs)
+      - name: Install Doxygen
         run: |
           sudo apt-get update
-          sudo apt-get install -y doxygen graphviz gcc-arm-none-eabi binutils-arm-none-eabi ninja-build
+          sudo apt-get install -y doxygen graphviz
 
-      # Step 4 - Install CMake
-      - name: Install CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: '3.27'
-
-      # ─── CHECK 1: HEADER AND COPYRIGHT NOTICE (WARNING ONLY) ────────────────
-      # Only checks our own code - skips Drivers/, Middlewares/ and MCSDK/
-      - name: Check File Headers and Copyright Notice
-        run: |
-          echo "Checking copyright headers in Src, Inc and application only..."
-          MISSING=0
-          while IFS= read -r file; do
-            if ! grep -q "Copyright\|copyright\|LICENSE\|license\|Author\|author\|SPDX" "$file"; then
-              echo "WARNING - MISSING HEADER: $file"
-              MISSING=$((MISSING + 1))
-            fi
-          done < <(find "$PROJECT_DIR/Src" "$PROJECT_DIR/Inc" \
-                        "$PROJECT_DIR/application/Src" "$PROJECT_DIR/application/Inc" \
-                        \( -name "*.c" -o -name "*.h" \) 2>/dev/null)
-          if [ "$MISSING" -gt 0 ]; then
-            echo "---"
-            echo "WARNING: $MISSING file(s) are missing copyright/header notice."
-            echo "This is a warning only - build will continue."
-          else
-            echo "PASSED: All files have copyright/header notice."
-          fi
-
-      # ─── CHECK 2: DOXYGEN DOCUMENTATION CHECK (WARNING ONLY) ────────────────
+      # Step 3 - Use the project Doxyfile, or create a default one for our own code only
       - name: Setup Doxyfile
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
@@ -157,50 +127,29 @@ jobs:
             sed -i 's|INPUT                  =|INPUT                  = Src Inc application/Src application/Inc|' Doxyfile
             sed -i 's/RECURSIVE              = NO/RECURSIVE              = YES/' Doxyfile
             sed -i 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' Doxyfile
+            sed -i 's/GENERATE_LATEX         = YES/GENERATE_LATEX         = NO/' Doxyfile
+            sed -i 's|OUTPUT_DIRECTORY       =|OUTPUT_DIRECTORY       = doxygen_docs|' Doxyfile
           fi
 
-      - name: Run Doxygen Check
+      # Step 4 - Generate the documentation (warnings are shown in this step's log, not fatal)
+      - name: Run Doxygen
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          echo "Running Doxygen..."
           doxygen Doxyfile 2>&1 | tee doxygen_output.log
           WARNINGS=$(grep -c "warning:" doxygen_output.log || true)
           echo "---"
           echo "Doxygen Warnings: $WARNINGS"
           if [ "$WARNINGS" -gt 0 ]; then
-            echo "WARNING: $WARNINGS Doxygen warning(s) found - please review doxygen_output.log"
-            echo "This is a warning only - build will continue."
+            echo "WARNING: $WARNINGS Doxygen warning(s) found - see the output above"
           else
             echo "PASSED: No Doxygen warnings found."
           fi
 
-      - name: Upload Doxygen Log
+      # Step 5 - Upload the generated HTML documentation
+      - name: Upload Doxygen HTML
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: stm32-doxygen-log
-          path: ${{ env.PROJECT_DIR }}/doxygen_output.log
+          name: doxygen-html
+          path: ${{ env.PROJECT_DIR }}/doxygen_docs/html
+          if-no-files-found: error
           retention-days: 7
-
-      # ─── CHECK 3: SONARCLOUD SCAN ────────────────────────────────────────────
-      # SonarCloud C analysis needs compile_commands.json (compiler flags + includes).
-      # CMake configure alone creates it (CMAKE_EXPORT_COMPILE_COMMANDS is ON in CMakeLists.txt).
-      - name: Generate compile_commands.json
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          cmake --preset Debug
-          test -f build/Debug/compile_commands.json
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: ${{ env.PROJECT_DIR }}
-          args: >
-            -Dsonar.organization=patilprathmesh08
-            -Dsonar.projectKey=patilprathmesh08_Testing
-            -Dsonar.sources=Src,Inc,application
-            -Dsonar.cfamily.compile-commands=build/Debug/compile_commands.json
-            -Dsonar.exclusions=**/build/**,**/Drivers/**,**/Middlewares/**,**/MCSDK_v6.4.2-Full/**
-            -Dsonar.qualitygate.wait=false
