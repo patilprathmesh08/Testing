@@ -9,8 +9,8 @@ on:
       - MotorCode
   pull_request:
     branches:
-      - poc
-      - motor_param_tunning
+      - main
+      - MotorCode
 
 # ─── PROJECT FOLDER (set once, used everywhere) ────────────────────────────────
 # Folder in the repository that contains CMakeLists.txt and CMakePresets.json.
