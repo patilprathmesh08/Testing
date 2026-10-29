@@ -1,5 +1,0 @@
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_command_handler.c:22:6:cnr_uart3_rx_start	8	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_command_handler.c:49:16:read_float	24	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_command_handler.c:83:9:cnr_parse_motion_command	24	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_command_handler.c:147:6:HAL_UARTEx_RxEventCallback	24	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_command_handler.c:181:6:HAL_UART_ErrorCallback	16	static

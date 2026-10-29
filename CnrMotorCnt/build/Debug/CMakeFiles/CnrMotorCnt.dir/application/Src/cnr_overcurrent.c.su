@@ -1,3 +1,0 @@
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_overcurrent.c:95:13:cnr_read_phase_currents_fixed_checked	32	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_overcurrent.c:119:6:cnr_overcurrent_enable	16	static
-G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/application/Src/cnr_overcurrent.c:125:6:cnr_current_sign_fix_enable	8	static
