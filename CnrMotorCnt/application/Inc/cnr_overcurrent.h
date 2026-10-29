@@ -10,6 +10,6 @@
 
 
 void cnr_overcurrent_enable(float limit_a);   
-
+void cnr_current_sign_fix_enable(void);
 
 #endif /* CNR_OVERCURRENT_H */

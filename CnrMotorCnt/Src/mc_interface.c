@@ -385,7 +385,9 @@ __weak bool MCI_StartMotor(MCI_Handle_t *pHandle)
   else
   {
 #endif
-    if ((IDLE == MCI_GetSTMState(pHandle)) && (MC_NO_FAULTS == MCI_GetOccurredFaults(pHandle)) && (MC_NO_FAULTS == MCI_GetCurrentFaults(pHandle)))
+    if ((IDLE == MCI_GetSTMState(pHandle)) &&
+        (MC_NO_FAULTS == MCI_GetOccurredFaults(pHandle)) &&
+        (MC_NO_FAULTS == MCI_GetCurrentFaults(pHandle)))
     {
       pHandle->DirectCommand = MCI_START;
       pHandle->CommandState = MCI_COMMAND_NOT_ALREADY_EXECUTED;

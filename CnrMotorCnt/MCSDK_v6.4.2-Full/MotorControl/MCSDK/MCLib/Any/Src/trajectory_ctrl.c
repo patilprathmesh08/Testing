@@ -475,7 +475,7 @@ void TC_EncoderReset(PosCtrl_Handle_t *pHandle)
   {
     pHandle->MecAngleOffset = pHandle->pENC->_Super.hMecAngle;
     pHandle->pENC->_Super.wMecAngle = 0;
-    pHandle->EncoderAbsoluteAligned = true; 
+    pHandle->EncoderAbsoluteAligned = true;
     pHandle->AlignmentStatus = TC_ALIGNMENT_COMPLETED;
     pHandle->PositionCtrlStatus = TC_READY_FOR_COMMAND;
     pHandle->Theta = 0.0f;

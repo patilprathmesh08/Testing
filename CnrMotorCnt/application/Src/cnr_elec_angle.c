@@ -44,7 +44,7 @@
 #include "stm32g4xx_ll_gpio.h"
 #include "stm32g4xx_ll_tim.h"
 #include "cnr_elec_angle.h"
-
+#include <cnr_position_control.h>
 
 /**
  * @brief  Runs MCSDK's encoder alignment (alignment + Z index search).
@@ -74,7 +74,7 @@ bool cnr_commutation_alignemnt(void){
   {
     if ((osKernelSysTick() - start_time) > CNR_START_TIMEOUT)
     {
-      printf("[COMMUTATION] did not reach RUN: state %d, faults 0x%04X\r\n",MC_GetSTMStateMotor1(),MC_GetCurrentFaultsMotor1());
+     printf("[COMMUTATION] did not reach RUN: state %d, occurred 0x%04X\r\n",MC_GetSTMStateMotor1(), MC_GetOccurredFaultsMotor1());
        motor_fault = HAL_ERROR;
       break;
     }
@@ -90,7 +90,7 @@ bool cnr_commutation_alignemnt(void){
 
     if ((osKernelSysTick() - start_time) > CNR_ALIGNMENT_TIMEOUT)
     {
-      printf("[COMMUTATION] did not reach TC_ALIGNMENT_COMPLETED state %d, faults 0x%d\r\n",MC_GetAlignmentStatusMotor1(),MC_GetCurrentFaultsMotor1());
+      printf("[COMMUTATION] did not reach TC_ALIGNMENT_COMPLETED state %d,occurred 0x%04X\r\n",MC_GetAlignmentStatusMotor1(), MC_GetOccurredFaultsMotor1());
       motor_fault = HAL_ERROR;
       break;
     }
@@ -103,6 +103,7 @@ bool cnr_commutation_alignemnt(void){
   }else{
     /*TODO*/
   }
+
 
   MC_StopMotor1();
 

@@ -13,8 +13,22 @@ extern UART_HandleTypeDef huart3;
 volatile uint8_t uart3_line_length;
 volatile uint8_t uart3_line_complete;
 volatile uint8_t uart3_received_byte;
-extern osSemaphoreId uart_line_semHandle;
+extern osSemaphoreId uart_line_semaHandle;
+static uint8_t uart3_dma_rx_buffer[COMMAND_LINE_MAX_CHARS];   
+/**
+ * @brief  Starts / restarts UART3 reception with DMA. The callback fires when the
+ *         line goes idle after a burst (end of a command) or the buffer is full.
+ */
+void cnr_uart3_rx_start(void)
+{
+    if (HAL_OK ==  huart3.hdmarx)
+    {
+        return;
+    }
 
+    (void)HAL_UARTEx_ReceiveToIdle_DMA(&huart3, uart3_dma_rx_buffer, sizeof(uart3_dma_rx_buffer));
+    __HAL_DMA_DISABLE_IT(huart3.hdmarx, DMA_IT_HT);        /* no half-transfer event */
+}
 /**
  * @brief  Reads one floating-point number from a text buffer.
  *
@@ -121,51 +135,58 @@ uint8_t cnr_parse_motion_command(const char *rec_data, motion_command_t *out_cmd
     return 1U;
 }
 /**
- * @brief  UART receive-complete interrupt callback (HAL): builds a command line.
+ * @brief  HAL Rx event callback (interrupt context): one UART3 command was received by DMA.
+ * @details Called when the line goes idle after a burst or the DMA buffer is full.
+ *          Copies the bytes up to the first '\n' / '\r' into the command line buffer,
+ *          terminates it, wakes the command handler task and restarts DMA reception.
+ *          A command that arrives while the previous one is still unread is dropped.
  *
- * @details Called by HAL for every byte received on UART3 (1-byte interrupt
- *          reception). Bytes are stored in uart3_line_buffer until a
- *          terminator ('\n' or '\r') arrives; then the line is NUL-terminated,
- *          uart3_line_complete is set and uart_line_semHandle is released to
- *          wake the command handler task.
- *          - While a previous line is not processed (uart3_line_complete = 1),
- *            new bytes are dropped.
- *          - Empty lines (terminator only) are ignored.
- *          - A line longer than COMMAND_LINE_MAX_CHARS - 1 is discarded.
- *          Reception is re-armed at the end with HAL_UART_Receive_IT().
- *
- * @param[in] huart  UART handle that completed reception (not checked:
- *                   assumes only UART3 uses interrupt reception).
+ * @param[in] uart_handle    UART that produced the event (only USART3 is handled).
+ * @param[in] received_size  Number of bytes written by DMA into uart3_dma_rx_buffer.
  */
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *uart_handle, uint16_t received_size)
 {
-    char received_char = (char)uart3_received_byte;
-
-    if (0U != uart3_line_complete)
+    if (uart_handle->Instance != USART3)
     {
-       
-    }
-    else if ((received_char == UART3_RX_TERMINATOR1) || (received_char == UART3_RX_TERMINATOR2))
-  {
-      if (uart3_line_length > 0U)
-      {
-          uart3_line_buffer[uart3_line_length] = '\0';
-          uart3_line_complete = 1U;   
-          uart3_line_length = 0;
-          osSemaphoreRelease(uart_line_semHandle);                 
-      }
-      uart3_line_length = 0U;
-    }
-    else if (uart3_line_length < (COMMAND_LINE_MAX_CHARS - 1U))
-    {
-        uart3_line_buffer[uart3_line_length] = received_char;
-        uart3_line_length++;
-    }
-    else
-    {
-        uart3_line_length = 0U;                        
+        return;
     }
 
-    HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3_received_byte, 1U); 
+    if ((0U == uart3_line_complete) && (received_size > 0U))
+    {
+        uint16_t char_count = 0U;
+
+        while ((char_count < received_size) &&(char_count < (COMMAND_LINE_MAX_CHARS - 1U)) && (uart3_dma_rx_buffer[char_count] != UART3_RX_TERMINATOR1) && (uart3_dma_rx_buffer[char_count] != UART3_RX_TERMINATOR2))
+        {
+            uart3_line_buffer[char_count] = uart3_dma_rx_buffer[char_count];
+            char_count++;
+        }
+
+        if (char_count > 0U)                                  
+        {
+            uart3_line_buffer[char_count] = '\0';
+            uart3_line_complete = 1U;
+            (void)osSemaphoreRelease(uart_line_semaHandle);  
+        }
+    }
+
+    cnr_uart3_rx_start();                     
+}
+/**
+ * @brief  HAL UART error callback: clears UART3 errors and restarts reception.
+ * @details Without this, one overrun / framing error stops UART3 reception until reset.
+ */
+volatile uint32_t g_uart3_err_count = 0U;    /* number of UART3 errors */
+volatile uint32_t g_uart3_last_err  = 0U;    /* HAL_UART_ERROR_* bits of the last error */
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != USART3) 
+    { 
+        return; 
+    }
+
+    g_uart3_last_err = huart->ErrorCode;        /* 0x08 ORE, 0x04 FE, 0x02 NE, 0x01 PE */
+    g_uart3_err_count++;
+    __HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_OREF | UART_CLEAR_NEF | UART_CLEAR_FEF | UART_CLEAR_PEF);
+    uart3_line_length = 0U;
 }

@@ -1,4 +1,4 @@
-# Install script for directory: G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt
+# Install script for directory: G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,13 +39,13 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/cmake_install.cmake")
+  include("G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/cmake/stm32cubemx/cmake_install.cmake")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/install_local_manifest.txt"
+  file(WRITE "G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -61,6 +61,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/Base/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "G:/Workspace/CHANNEL RBOTICS/BLDC Motor/POC/motorTunning/CNR-ICU-FW-Motors/CnrMotorCnt/build/Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

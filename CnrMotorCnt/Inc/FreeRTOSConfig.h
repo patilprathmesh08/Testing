@@ -134,6 +134,9 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+#define CNR_REAL_TICK_RATE_HZ   2000U
+#define pdMS_TO_TICKS( xTimeInMs ) \
+        ( ( TickType_t ) ( ( ( uint64_t ) ( xTimeInMs ) * CNR_REAL_TICK_RATE_HZ ) / 1000U ) )
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

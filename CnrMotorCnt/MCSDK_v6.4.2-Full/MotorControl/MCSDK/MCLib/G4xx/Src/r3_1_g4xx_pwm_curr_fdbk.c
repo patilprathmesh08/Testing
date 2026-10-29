@@ -30,7 +30,7 @@
 #include "r3_1_g4xx_pwm_curr_fdbk.h"
 #include "pwm_common.h"
 #include "mc_type.h"
-#include<stdio.h>
+
 /** @addtogroup MCSDK
   * @{
   */
@@ -1587,7 +1587,6 @@ __weak void *R3_1_TIMx_UP_IRQHandler(PWMC_R3_1_Handle_t *pHandle)
     /* In dual drive use case with shared ADC: wait for end of sequence conversion before writing a new one */
     while (ADCx->JSQR != 0x0u)
     {
-      printf("ADCx->JSQR\n");
       /* Nothing to do */
     }
     

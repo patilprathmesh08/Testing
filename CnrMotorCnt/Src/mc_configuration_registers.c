@@ -44,8 +44,8 @@ static const ApplicationConfig_reg_t M1_ApplicationConfig_reg =
 {
   .maxMechanicalSpeed = 50000,
   .maxReadableCurrent = M1_MAX_READABLE_CURRENT,
-  .nominalCurrent     = 1.6,
-  .nominalVoltage     = 35,   //36,
+  .nominalCurrent     = 0.6,
+  .nominalVoltage     = 35,
   .driveType          = DRIVE_TYPE_M1,
 };
 
@@ -54,10 +54,10 @@ static const MotorConfig_reg_t M1_MotorConfig_reg =
 {
   .polePairs  = 1,
   .ratedFlux  = 0.6,
-  .rs         = 11.3,
-  .ls         = 0.000098*1.000,     //0*1.000,
-  .ld         = 0.000098,           //0
-  .maxCurrent = 1.6,
+  .rs         = 5.65,
+  .ls         = 0.000049*1.000,
+  .ld         = 0.000049,
+  .maxCurrent = 0.6,
   .name = "MAXON EC-I 100W"
 };
 

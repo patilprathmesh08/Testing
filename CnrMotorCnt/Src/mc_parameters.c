@@ -48,22 +48,22 @@ const R3_1_Params_t R3_1_ParamsM1 =
 
   .ADCConfig = {
                  (3U << ADC_JSQR_JSQ1_Pos)
-               | (4U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
+               | (2U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
-                ,(2U << ADC_JSQR_JSQ1_Pos)
-               | (4U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
+                ,(4U << ADC_JSQR_JSQ1_Pos)
+               | (2U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
-                ,(2U << ADC_JSQR_JSQ1_Pos)
-               | (4U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
+                ,(4U << ADC_JSQR_JSQ1_Pos)
+               | (2U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
-                ,(2U << ADC_JSQR_JSQ1_Pos)
+                ,(4U << ADC_JSQR_JSQ1_Pos)
                | (3U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
-                ,(2U << ADC_JSQR_JSQ1_Pos)
+                ,(4U << ADC_JSQR_JSQ1_Pos)
                | (3U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
                 ,(3U << ADC_JSQR_JSQ1_Pos)
-               | (4U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
+               | (2U << ADC_JSQR_JSQ2_Pos) | 1<< ADC_JSQR_JL_Pos
                | (LL_ADC_INJ_TRIG_EXT_TIM1_TRGO & ~ADC_INJ_TRIG_EXT_EDGE_DEFAULT)
                },
 

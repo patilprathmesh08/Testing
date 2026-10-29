@@ -29,7 +29,7 @@
  ************************/
 
 /************* PWM Driving signals section **************/
-#define HW_DEAD_TIME_NS                      1000 /*!< Dead-time inserted
+#define HW_DEAD_TIME_NS                      750 /*!< Dead-time inserted
                                                       by HW if low side signals
                                                       are not used */
 /*********** Bus voltage sensing section ****************/
@@ -37,20 +37,20 @@
                                                       much the Vbus is attenuated
                                                       before being converted into
                                                       digital value */
-#define NOMINAL_BUS_VOLTAGE_V                33U
+#define NOMINAL_BUS_VOLTAGE_V                35U
 /******** Current reading parameters section ******/
 /*** Topology ***/
 #define THREE_SHUNT
 
-#define RSHUNT                               0.15 
+#define RSHUNT                               0.15
 
 /*  ICSs gains in case of isolated current sensors,
         amplification gain for shunts based sensing */
-#define AMPLIFICATION_GAIN                   1   //0.15
+#define AMPLIFICATION_GAIN                   1
 
 /*** Noise parameters ***/
 #define TNOISE_NS                            700
-#define TRISE_NS                             1800
+#define TRISE_NS                             1000
 #define MAX_TNTR_NS                          TRISE_NS
 
 /************ Temperature sensing section ***************/

@@ -291,7 +291,6 @@ __weak void TSK_MediumFrequencyTaskM1(void)
           {
             if (TSK_ChargeBootCapDelayHasElapsedM1())
             {
-
               R3_1_SwitchOffPWM(pwmcHandle[M1]);
               FOCVars[M1].bDriveInput = EXTERNAL;
               STC_SetSpeedSensor( pSTC[M1], &VirtualSpeedSensorM1._Super );
@@ -375,8 +374,7 @@ __weak void TSK_MediumFrequencyTaskM1(void)
             TC_PositionRegulation(pPosCtrl[M1]);
             MCI_ExecBufferedCommands(&Mci[M1]);
 
-            FOC_CalcCurrRef(M1);
-
+              FOC_CalcCurrRef(M1);
           }
           break;
         }

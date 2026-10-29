@@ -35,7 +35,6 @@
 #include "mcp_config.h"
 
 /* USER CODE BEGIN Includes */
-#include<stdio.h>
 
 /* USER CODE END Includes */
 
@@ -53,7 +52,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern volatile uint8_t g_index_hit ;
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* USER CODE END PRIVATE */
@@ -187,7 +186,7 @@ void USART1_IRQHandler(void)
 void HardFault_Handler(void)
 {
  /* USER CODE BEGIN HardFault_IRQn 0 */
-  printf("HardFault_Handler\n");
+
  /* USER CODE END HardFault_IRQn 0 */
 
   TSK_HardwareFaultTask();

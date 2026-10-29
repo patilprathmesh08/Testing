@@ -87,18 +87,18 @@ bool cnr_position_command_handler(float position_rad,float duration){
         return HAL_ERROR;
     }
 
-    if(TC_MOVEMENT_ON_GOING == status){
-        while(TC_READY_FOR_COMMAND != MC_GetControlPositionStatusMotor1()){
-            cnr_capture_log();
-            osDelay(pdMS_TO_TICKS(1));
-        }
-    }else{
-        cnr_follow_capture_log();
-    }
+    // if(TC_MOVEMENT_ON_GOING == status){
+    //     while(TC_READY_FOR_COMMAND != MC_GetControlPositionStatusMotor1()){
+    //         cnr_capture_log();
+    //         osDelay(pdMS_TO_TICKS(1));
+    //     }
+    // }else{
+    //     cnr_follow_capture_log();
+    // }
 
-     osDelay(10);
+    //  osDelay(10);
 
-     cnr_capture_log();
+    //  cnr_capture_log();
 
     return HAL_OK;
 }
@@ -194,6 +194,7 @@ bool cnr_execute_command(motion_command_t *cmd)
 {
     switch (cmd->command_type)
     {
+        
         case CNR_MOTOR_DISABLE:
              if(cnr_motor_stop()){
                 return HAL_ERROR;
@@ -211,7 +212,7 @@ bool cnr_execute_command(motion_command_t *cmd)
             break;
 
         default:
-            printf("[CMD] unknown command type %d\r\n", cmd->command_type);
+            // printf("[CMD] unknown command type %d\r\n", cmd->command_type);
              return HAL_ERROR;
     }
 

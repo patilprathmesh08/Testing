@@ -37,7 +37,7 @@
 #include "mc_app_hooks.h"
 
 /* USER CODE BEGIN Includes */
-#include<stdio.h>
+
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private define */
@@ -416,7 +416,6 @@ __weak void TSK_HardwareFaultTask(void)
 }
 
 /* startMediumFrequencyTask function */
-
 void startMediumFrequencyTask(void const * argument)
 {
   /* USER CODE BEGIN MF task 1 */
@@ -438,7 +437,7 @@ void startMediumFrequencyTask(void const * argument)
     {
       /* Nothing to do */
     }
-    
+
     MC_RunMotorControlTasks();
   }
   /* USER CODE END MF task 1 */

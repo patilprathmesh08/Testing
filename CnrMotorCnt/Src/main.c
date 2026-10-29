@@ -22,7 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include<stdio.h>
 #include "mc_api.h"
 #include "mcp_config.h"
 #include "mc_tasks.h"
@@ -33,7 +32,6 @@
 #include "cnr_command_handler.h"
 #include "cnr_mcsdk_position_control_test.h"
 #include "cnr_overcurrent.h"
-// #include "mc_interface.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,26 +46,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-// #define CNR_FOLLOW_LOG_INTERVAL_MS    1U
 
-/* Position Control */
-// #define POS_CTRL_100RAD_TARGET     100.0f
-// #define POS_CTRL_1000RAD_TARGET    1000.0f
-// #define FOLLOW_TIMEOUT_MS    4000U
-// #define FOLLOW_MODE_DURATION_S    0.0f
-
-// /* Trajectory Control */
-// #define TRAJ_CTRL_100RAD_TARGET    100.0f
-// #define TRAJ_CTRL_100RAD_OUT_TIME  2.0f
-// #define TRAJ_CTRL_100RAD_BACK_TIME 2.0f
-
-// #define TRAJ_CTRL_1000RAD_TARGET    1000.0f
-// #define TRAJ_CTRL_1000RAD_OUT_TIME  2.0f
-// #define TRAJ_CTRL_1000RAD_BACK_TIME 4.0f
-
-
-// #define CNR_FOLLOW_SETTLE_TIME_MS    5000U
-/* USER CODE END PD */
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -85,18 +64,15 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
+DMA_HandleTypeDef hdma_usart3_rx;
 
-osThreadId foc_taskHandle;
-osThreadId instr_taskHandle;
-osThreadId handler_taskHandle;
 osThreadId mediumFrequencyHandle;
 osThreadId safetyHandle;
-
-
+osThreadId motor_taskHandle;
+osThreadId handler_taskHandle;
+osMessageQId command_queHandle;
+osSemaphoreId uart_line_semaHandle;
 /* USER CODE BEGIN PV */
-osMessageQId command_queueHandle;
-osSemaphoreId uart_line_semHandle;
-
 extern volatile uint8_t uart3_line_complete;
 extern volatile uint8_t uart3_received_byte;
 extern volatile uint8_t uart3_line_buffer[COMMAND_LINE_MAX_CHARS];
@@ -105,24 +81,23 @@ extern volatile uint8_t uart3_line_buffer[COMMAND_LINE_MAX_CHARS];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-// static void MX_DMA_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CORDIC_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_SPI2_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_USART3_UART_Init(void);
-void cnr_start_foc_control_task(void const * argument);
-void start_instruction_task(void const * argument);
-void cnr_start_command_handler_task(void const * argument);
+static void MX_SPI2_Init(void);
 void startMediumFrequencyTask(void const * argument);
 extern void StartSafetyTask(void const * argument);
+void cnr_start_motor_control_task(void const * argument);
+void cnr_start_command_handler_task(void const * argument);
 
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-extern volatile uint8_t g_index_hit;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -198,8 +173,6 @@ void R3_1_SwitchOffPWM(PWMC_Handle_t *pHdl)
   LL_TIM_DisableAllOutputs(TIMx);
   /* nSLEEP toggle deliberately REMOVED - the CSA must stay alive */
 }
-
-
 /* USER CODE END 0 */
 
 /**
@@ -215,8 +188,8 @@ int main(void)
 
   /* MCU Configuration--------------------------------------------------------*/
 
-  HAL_Init();
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -231,27 +204,20 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  // MX_DMA_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_CORDIC_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
-  // MX_MotorControl_Init();
-  MX_SPI2_Init();
+  MX_MotorControl_Init();
   MX_TIM8_Init();
   MX_USART3_UART_Init();
+  MX_SPI2_Init();
 
   /* Initialize interrupts */
-
-  HAL_GPIO_WritePin(M1_PWM_EN_UVW_GPIO_Port,M1_PWM_EN_UVW_Pin,GPIO_PIN_SET);
-
-  MX_MotorControl_Init();
-
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-
-
 
   /* USER CODE END 2 */
 
@@ -259,60 +225,46 @@ int main(void)
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* definition and creation of uart_line_sema */
+  osSemaphoreDef(uart_line_sema);
+  uart_line_semaHandle = osSemaphoreCreate(osSemaphore(uart_line_sema), 1);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-    osSemaphoreDef(uart_line_sem);
-    uart_line_semHandle = osSemaphoreCreate(osSemaphore(uart_line_sem), 1);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
+  /* Create the queue(s) */
+  /* definition and creation of command_que */
+  osMessageQDef(command_que, 16, motion_command_t);
+  command_queHandle = osMessageCreate(osMessageQ(command_que), NULL);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-  osMessageQDef(commandQue, 16, motion_command_t);
-  command_queueHandle = osMessageCreate(osMessageQ(commandQue), NULL);
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of foc_task */
-  osThreadDef(foc_task, cnr_start_foc_control_task, osPriorityAboveNormal, 0, 512);
-  foc_taskHandle = osThreadCreate(osThread(foc_task), NULL);
-
-  /* definition and creation of handler_task */
-  osThreadDef(handler_task, cnr_start_command_handler_task, osPriorityBelowNormal, 0, 256);
-  handler_taskHandle = osThreadCreate(osThread(handler_task), NULL);
-
   /* definition and creation of mediumFrequency */
   osThreadDef(mediumFrequency, startMediumFrequencyTask, osPriorityRealtime, 0, 128);
   mediumFrequencyHandle = osThreadCreate(osThread(mediumFrequency), NULL);
 
   /* definition and creation of safety */
-  osThreadDef(safety, StartSafetyTask, osPriorityRealtime /*osPriorityIdle*/, 0, 128);
+  osThreadDef(safety, StartSafetyTask, osPriorityRealtime, 0, 128);
   safetyHandle = osThreadCreate(osThread(safety), NULL);
 
+  /* definition and creation of motor_task */
+  osThreadDef(motor_task, cnr_start_motor_control_task, osPriorityAboveNormal, 0, 512);
+  motor_taskHandle = osThreadCreate(osThread(motor_task), NULL);
+
+  /* definition and creation of handler_task */
+  osThreadDef(handler_task, cnr_start_command_handler_task, osPriorityBelowNormal, 0, 256);
+  handler_taskHandle = osThreadCreate(osThread(handler_task), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
-
-  if(foc_taskHandle == NULL || handler_taskHandle == NULL)
-  {
-      printf("[ERROR] : Failed to create task\n");
-  }
-
-  printf("Free heap = %lu\r\n", (unsigned long)xPortGetFreeHeapSize());
-
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n"); 
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-  printf("Channel robotics-->2\n");
-
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -323,7 +275,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
   while (1)
   {
     /* USER CODE END WHILE */
@@ -398,10 +349,12 @@ static void MX_NVIC_Init(void)
   printf("Channelrobotics--->\n");
   printf("Channelrobotics--->\n");
   printf("Channelrobotics--->\n");
-
   HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
   printf("Channelrobotics--->\n");
-   
+  printf("Channelrobotics--->\n");
+  printf("Channelrobotics--->\n");
+  printf("Channelrobotics--->\n");
+  printf("Channelrobotics--->\n");
   /* TIM4_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(TIM4_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(TIM4_IRQn);
@@ -546,11 +499,11 @@ static void MX_SPI2_Init(void)
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi2.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -697,7 +650,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM4_Init 2 */
-  // HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+
   /* USER CODE END TIM4_Init 2 */
 
 }
@@ -817,7 +770,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 2000000;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -839,12 +792,12 @@ static void MX_USART3_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart3) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
-  HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3_received_byte, 1U); 
+
   /* USER CODE END USART3_Init 2 */
 
 }
@@ -852,14 +805,19 @@ static void MX_USART3_UART_Init(void)
 /**
   * Enable DMA controller clock
   */
-// static void MX_DMA_Init(void)
-// {
+static void MX_DMA_Init(void)
+{
 
-//   /* DMA controller clock enable */
-//   __HAL_RCC_DMAMUX1_CLK_ENABLE();
-//   __HAL_RCC_DMA1_CLK_ENABLE();
+  /* DMA controller clock enable */
+  __HAL_RCC_DMAMUX1_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
-// }
+  /* DMA interrupt init */
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+}
 
 /**
   * @brief GPIO Initialization Function
@@ -880,7 +838,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, M1_SPI_CS_Pin|M1_EXT_ENCODER_Z_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(M1_SPI_CS_GPIO_Port, M1_SPI_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(M1_PWM_EN_UVW_GPIO_Port, M1_PWM_EN_UVW_Pin, GPIO_PIN_RESET);
@@ -897,12 +855,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(M1_VCC_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : M1_SPI_CS_Pin M1_EXT_ENCODER_Z_Pin */
-  GPIO_InitStruct.Pin = M1_SPI_CS_Pin|M1_EXT_ENCODER_Z_Pin;
+  /*Configure GPIO pin : M1_SPI_CS_Pin */
+  GPIO_InitStruct.Pin = M1_SPI_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(M1_SPI_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : M1_PWM_EN_UVW_Pin */
   GPIO_InitStruct.Pin = M1_PWM_EN_UVW_Pin;
@@ -911,14 +869,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(M1_PWM_EN_UVW_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : M1_ENCODER_Z_Pin */
-  GPIO_InitStruct.Pin = M1_ENCODER_Z_Pin;
+  /*Configure GPIO pins : M1_EXT_ENCODER_Z_Pin M1_ENCODER_Z_Pin */
+  GPIO_InitStruct.Pin = M1_EXT_ENCODER_Z_Pin|M1_ENCODER_Z_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP,//GPIO_NOPULL;
-  HAL_GPIO_Init(M1_ENCODER_Z_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
-
+  HAL_GPIO_WritePin(M1_PWM_EN_UVW_GPIO_Port,M1_PWM_EN_UVW_Pin,GPIO_PIN_SET);
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -926,18 +884,38 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_cnr_start_foc_control_task */
+/* USER CODE BEGIN Header_startMediumFrequencyTask */
 /**
-  * @brief  Function implementing the foc_task thread.
+  * @brief  Function implementing the mediumFrequency thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_cnr_start_foc_control_task */
-void cnr_start_foc_control_task(void const * argument)
+/* USER CODE END Header_startMediumFrequencyTask */
+__weak void startMediumFrequencyTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
-  uint8_t motor_fault = 0U;
+
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_cnr_start_motor_control_task */
+/**
+* @brief Function implementing the motor_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_cnr_start_motor_control_task */
+void cnr_start_motor_control_task(void const * argument)
+{
+  /* USER CODE BEGIN cnr_start_motor_control_task */
+  int8_t motor_fault = 0U;
   cnr_overcurrent_enable(OVERCURRENT_FAULT_A);
+  cnr_current_sign_fix_enable();
 
   if(cnr_commutation_alignemnt()){
     printf("[COMMUTATION] : Failed to align\n");
@@ -961,13 +939,13 @@ void cnr_start_foc_control_task(void const * argument)
     cnr_mcsdk_position_control_poc_test();
   #endif
 
-
+  /* Infinite loop */
   for(;;)
-  {
-
+  {  
+     
     motion_command_t cmd; 
 
-    xQueueReceive(command_queueHandle, &cmd, portMAX_DELAY);
+    xQueueReceive(command_queHandle, &cmd, portMAX_DELAY);
     
     if(!motor_fault){   
 
@@ -981,9 +959,8 @@ void cnr_start_foc_control_task(void const * argument)
       printf("[CONTROLOOP] : motor is in fault\n");
     }
   }
-  /* USER CODE END 5 */
+  /* USER CODE END cnr_start_motor_control_task */
 }
-
 
 /* USER CODE BEGIN Header_cnr_start_command_handler_task */
 /**
@@ -995,43 +972,27 @@ void cnr_start_foc_control_task(void const * argument)
 void cnr_start_command_handler_task(void const * argument)
 {
   /* USER CODE BEGIN cnr_start_command_handler_task */
-
-  osSemaphoreWait(uart_line_semHandle, 0);
+  osSemaphoreWait(uart_line_semaHandle, 0);
+  cnr_uart3_rx_start();     
   /* Infinite loop */
   for(;;)
   {
-    if (osOK == osSemaphoreWait(uart_line_semHandle, osWaitForever)){
+    if (osOK == osSemaphoreWait(uart_line_semaHandle, osWaitForever)){
       motion_command_t cmd; 
       if(cnr_parse_motion_command((const char *)uart3_line_buffer, &cmd)){
-        if (pdPASS != xQueueSend(command_queueHandle, &cmd, 0))  
+              HAL_GPIO_WritePin(MCU_UART3_TX_GPIO_Port, M1_SPI_CS_Pin, GPIO_PIN_RESET);  
+        if (pdPASS != xQueueSend(command_queHandle, &cmd, 0))  
         {
           printf("[HANDLERLOOP] : command dropped\r\n");
         }
       }else{
+             HAL_GPIO_WritePin(MCU_UART3_TX_GPIO_Port, M1_SPI_CS_Pin, GPIO_PIN_RESET);  
         printf("[HANDLERLOOP] : invalid command: %s\r\n", uart3_line_buffer);
       }
       uart3_line_complete = 0U; 
     }
   }
   /* USER CODE END cnr_start_command_handler_task */
-}
-
-/* USER CODE BEGIN Header_startMediumFrequencyTask */
-/**
-* @brief Function implementing the mediumFrequency thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startMediumFrequencyTask */
-__weak void startMediumFrequencyTask(void const * argument)
-{
-  /* USER CODE BEGIN startMediumFrequencyTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END startMediumFrequencyTask */
 }
 
 /**
@@ -1063,7 +1024,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  printf("Error_Handler\n");
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)

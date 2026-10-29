@@ -33,7 +33,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include<stdio.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -44,12 +44,11 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 
-
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-  #define RAD_TO_DEG   57.2957795f  
+
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -58,10 +57,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void TSK_MediumFrequencyTaskM1(void);
-void TSK_MF_StopProcessing(uint8_t motor);
-MCI_Handle_t *GetMCI(uint8_t bMotor);
-void TSK_SafetyTask_PWMOFF(uint8_t motor);
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -105,6 +101,7 @@ void TSK_SafetyTask_PWMOFF(uint8_t motor);
 #define M1_EXT_ENCODER_A_GPIO_Port GPIOA
 #define M1_EXT_ENCODER_Z_Pin GPIO_PIN_5
 #define M1_EXT_ENCODER_Z_GPIO_Port GPIOB
+#define M1_EXT_ENCODER_Z_EXTI_IRQn EXTI9_5_IRQn
 #define M1_ENCODER_Z_Pin GPIO_PIN_6
 #define M1_ENCODER_Z_GPIO_Port GPIOB
 #define M1_ENCODER_Z_EXTI_IRQn EXTI9_5_IRQn

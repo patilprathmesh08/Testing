@@ -21,6 +21,6 @@ typedef enum
 } command_type_t;
 
 uint8_t cnr_parse_motion_command(const char *rec_data, motion_command_t *out_cmd);
-
+void cnr_uart3_rx_start(void);
 
 #endif

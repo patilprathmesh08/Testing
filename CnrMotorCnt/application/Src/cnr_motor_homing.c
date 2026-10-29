@@ -221,6 +221,7 @@ uint8_t cnr_home_to_stop(void)
     float    resting_position = MC_GetCurrentPosition1();
     uint32_t park_tick        =  osKernelSysTick();
 
+
     while (TC_READY_FOR_COMMAND != MC_GetControlPositionStatusMotor1())
     {
       if (( osKernelSysTick() - park_tick) > 3000U) { break; }
@@ -229,15 +230,18 @@ uint8_t cnr_home_to_stop(void)
 
     MC_ProgramPositionCommandMotor1(resting_position, 0.25f);
 
+  
+
     park_tick =  osKernelSysTick();
     while (TC_READY_FOR_COMMAND != MC_GetControlPositionStatusMotor1())
     {
       if (( osKernelSysTick() - park_tick) > 3000U) { break; }
-     osDelay(pdMS_TO_TICKS(5));
+      osDelay(pdMS_TO_TICKS(5));
     }
+
   }
 
-  // printf("[HOME] HOME Completed : %d\r\n",stop_found);
+  printf("[HOME] HOME Completed : %d\r\n",stop_found);
 
    return stop_found;
 }

@@ -44,20 +44,19 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+    # Add user sources here
     application/Src/cnr_elec_angle.c
     application/Src/cnr_position_control.c
     application/Src/cnr_motor_homing.c
     application/Src/cnr_command_handler.c
     application/Src/cnr_mcsdk_position_control_test.c
     application/Src/cnr_overcurrent.c
-
-    # Add user sources here
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    application/Inc
     # Add user defined include paths
+    application/Inc
 )
 
 # Add project symbols (macros)
@@ -76,4 +75,9 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 )
 target_link_options(${PROJECT_NAME} PRIVATE
     -u _printf_float
+)
+# Create CnrMotorCnt.bin (for flashing) from the .elf after every build
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${CMAKE_PROJECT_NAME}.bin
+    COMMENT "Creating ${CMAKE_PROJECT_NAME}.bin"
 )
